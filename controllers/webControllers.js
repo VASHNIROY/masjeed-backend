@@ -110,7 +110,7 @@ export const todaySchedule = CatchAsyncError(async (req, res, next) => {
         return row.Month == todayMonth && row.Day == todayDay;
       });
 
-      res.json({ todaySchedule });
+      res.json({ excelData });
     });
   } catch (error) {
     console.log("Error:", error);

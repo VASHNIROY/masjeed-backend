@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  approveMasjeed,
   masjeedsList,
   superAdminLogin,
   superAdminRegistration,
@@ -8,10 +9,14 @@ import { isAuthenticatedSuperAdmin } from "../middleware/auth.js";
 
 export const superadminrouter = express.Router();
 
-
 superadminrouter.post("/superadminregistration", superAdminRegistration);
 
 superadminrouter.post("/superadminlogin", superAdminLogin);
 
-superadminrouter.get("/getmasjeeds",isAuthenticatedSuperAdmin, masjeedsList);
+superadminrouter.get("/getmasjeeds", isAuthenticatedSuperAdmin, masjeedsList);
 
+superadminrouter.get(
+  "/approvemasjeed/:id",
+  isAuthenticatedSuperAdmin,
+  approveMasjeed
+);
