@@ -1,7 +1,8 @@
 export const createMasjeedTable = `
     CREATE TABLE IF NOT EXISTS masjeed(
             id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(1000) NOT NULL,
+            adminname VARCHAR(1000) NOT NULL,
+            masjeedname VARCHAR(1000) NOT NULL,
             address VARCHAR(1000) NOT NULL,
              email VARCHAR(255) NOT NULL,
             postalcode INT NOT NULL,

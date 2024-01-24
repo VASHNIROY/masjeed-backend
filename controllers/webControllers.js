@@ -16,7 +16,7 @@ export const addMasjeed = CatchAsyncError(async (req, res, next) => {
     const filename = req.file ? req.file.filename : null;
 
     const {
-      name,
+      adminname,
       address,
       email,
       postalcode,
@@ -24,6 +24,7 @@ export const addMasjeed = CatchAsyncError(async (req, res, next) => {
       state,
       country,
       phonenumber,
+      masjeedname,
     } = req.body;
 
     if (!filename) {
@@ -31,12 +32,13 @@ export const addMasjeed = CatchAsyncError(async (req, res, next) => {
       return;
     }
 
-    const addMasjeedQuery = `INSERT INTO masjeed (name,status,address,email,postalcode,city,state,country,phonenumber,prayerdetails) VALUES (?,?,?,?,?,?,?,?,?,?)`;
+    const addMasjeedQuery = `INSERT INTO masjeed (adminname,masjeedname,status,address,email,postalcode,city,state,country,phonenumber,prayerdetails) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
 
     connection.query(
       addMasjeedQuery,
       [
-        name,
+        adminname,
+        masjeedname,
         0,
         address,
         email,
