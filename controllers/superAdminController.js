@@ -89,6 +89,8 @@ export const superAdminLogin = CatchAsyncError(async (req, res, next) => {
   }
 });
 
+
+
 export const masjeedsList = CatchAsyncError(async (req, res, next) => {
   try {
     const getMasjeedsQuery = `SELECT * FROM masjeed WHERE status = 1`;
