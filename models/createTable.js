@@ -1,8 +1,9 @@
 import { connection } from "../utils/db.js";
-import {createSuperAdminTable} from "./superadminTable.js";
-import {createMasjeedTable} from "./masjeedTable.js";
+import { createSuperAdminTable } from "./superadminTable.js";
+import { createMasjeedTable } from "./masjeedTable.js";
 import { createAdminTable } from "./adminTable.js";
 import { createPrayerTimingsTable } from "./prayerTimingsTable.js";
+import { adminStaffTable } from "./adminStaffTable.js";
 
 const tableToCreate = [
   { tableName: "Super Admin", sql: createSuperAdminTable },
@@ -17,6 +18,10 @@ const tableToCreate = [
   {
     tableName: "Prayer Timings Table",
     sql: createPrayerTimingsTable,
+  },
+  {
+    tableName: "Admin Staff",
+    sql: adminStaffTable,
   },
 ];
 

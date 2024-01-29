@@ -107,6 +107,26 @@ export const masjeedsList = CatchAsyncError(async (req, res, next) => {
   }
 });
 
+
+
+export const newMasjeeds = CatchAsyncError(async (req, res, next) => {
+  try {
+    const getMasjeedsQuery = `SELECT * FROM masjeed WHERE status = 0`;
+    connection.query(getMasjeedsQuery, (selectErr, results) => {
+      if (selectErr) {
+        console.log("Error fetching masjeeds from Database", selectErr);
+        return next(new ErrorHandler("Internal Server Error", 500));
+      }
+      if (results.length === 0) {
+        return next(new ErrorHandler("Masjeeds Not Found", 404));
+      }
+      res.json({ success: true, message: "Fetched masjeeds", data: results });
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
 /* approved masjeeds status = 1 */
 /* rejected masjeeds status = 0 */
 export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
@@ -376,5 +396,3 @@ export const rejectMasjeed = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
-
-

@@ -2,6 +2,7 @@ import express from "express";
 import {
   forgotPassword,
   getMasjeedTimings,
+  updateMasjeedDetails,
   updateTimingRow,
   verifyEmailOTPSend,
 } from "../controllers/adminController.js";
@@ -15,3 +16,5 @@ adminRouter.post("/forgetpassword", forgotPassword);
 adminRouter.post("/adminotpverfiysend", verifyEmailOTPSend);
 
 adminRouter.put("/updateTimingRow", updateTimingRow);
+
+adminRouter.put("/updatemasjeeddetails/:id", updateMasjeedDetails);

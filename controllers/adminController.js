@@ -3,6 +3,17 @@ import ErrorHandler from "../utils/ErrorHandler.js";
 import { connection } from "../utils/db.js";
 import nodemailerConfig from "../utils/nodemailer.js";
 
+import { fileURLToPath } from "url";
+
+import xlsx from "xlsx";
+import path from "path";
+
+import { dirname } from "path";
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 function generateOTP() {
   // Generate a 4-digit random OTP
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -207,7 +218,9 @@ export const getMasjeedDetails = CatchAsyncError(async (req, res, next) => {
 export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
   try {
     const masjeedid = req.params.id;
-    const masjeedUpdateQuery = `UPDATE masjeed SET adminname = ?, masjeedname = ?, address =? , email = ?, postalcode = ?, city = ?, state = ?, country = ?, phonenumber = ?, status = ?, prayerdetails = ? WHERE id = ?`;
+    const filename = req.file ? req.file.filename : null;
+
+    const masjeedUpdateQuery = `UPDATE masjeed SET adminname = ?, masjeedname = ?, address =? , email = ?, postalcode = ?, city = ?, state = ?, country = ?, phonenumber = ?, prayerdetails = ? WHERE id = ?`;
     const {
       adminname,
       masjeedname,
@@ -218,7 +231,7 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
       state,
       country,
       phonenumber,
-      status,
+      
       prayerdetails,
     } = req.body;
 
@@ -234,7 +247,7 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
         state,
         country,
         phonenumber,
-        status,
+      
         prayerdetails,
         masjeedid,
       ],
@@ -255,3 +268,14 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
+export const addAdminStaff = CatchAsyncError(async (req,res, next) => {
+  try {
+    const { name, email, password, phonenumber, comment, masjeedid, roleid } = req.body
+
+    const addAdminStaffQuery = `INSERT INTO adminstaff(name, email, password, phonenumber, comment, masjeedid, roleid, status) VALUES()`
+
+  }catch(error){
+    return next(new ErrorHandler(error.message, 400))
+  }
+})
