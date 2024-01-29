@@ -81,7 +81,7 @@ export const superAdminLogin = CatchAsyncError(async (req, res, next) => {
         const jwt_token = jwt.sign(payload, SECRET_KEY);
         res.send({ jwt_token, message: "Login Successful" });
       } else {
-        return next(new ErrorHandler("Invalid Password", 400));
+        return next(new ErrorHandler("Invalid Email or Password", 400));
       }
     });
   } catch (error) {
@@ -328,7 +328,7 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
 
                   res.json({
                     success: true,
-                    message: "Inserted Successfully",
+                    message: "Accepted Successfully",
                   });
                 }
               );
