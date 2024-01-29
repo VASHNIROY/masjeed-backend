@@ -184,3 +184,74 @@ export const updateTimingRow = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
+export const getMasjeedDetails = CatchAsyncError(async (req, res, next) => {
+  try {
+    const masjeedid = req.params.id;
+    const masjeedDetailsQuery = `SELECT * FROM masjeed WHERE id = ?`;
+    connection.query(masjeedDetailsQuery, [masjeedid], (selectErr, results) => {
+      if (selectErr) {
+        console.log("Error fetching masjeed from Database", selectErr);
+        return next(new ErrorHandler("Internal Server Error", 500));
+      }
+      if (results.length === 0) {
+        return next(new ErrorHandler("masjeed Not Found", 404));
+      }
+      res.json({ success: true, message: "Fetched masjeed", data: results });
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
+export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
+  try {
+    const masjeedid = req.params.id;
+    const masjeedUpdateQuery = `UPDATE masjeed SET adminname = ?, masjeedname = ?, address =? , email = ?, postalcode = ?, city = ?, state = ?, country = ?, phonenumber = ?, status = ?, prayerdetails = ? WHERE id = ?`;
+    const {
+      adminname,
+      masjeedname,
+      address,
+      email,
+      postalcode,
+      city,
+      state,
+      country,
+      phonenumber,
+      status,
+      prayerdetails,
+    } = req.body;
+
+    connection.query(
+      masjeedUpdateQuery,
+      [
+        adminname,
+        masjeedname,
+        address,
+        email,
+        postalcode,
+        city,
+        state,
+        country,
+        phonenumber,
+        status,
+        prayerdetails,
+        masjeedid,
+      ],
+      (updateErr, results) => {
+        if (updateErr) {
+          console.log("Error while updating masjeed in Database", updateErr);
+          return next(new ErrorHandler("Internal Server Error", 500));
+        }
+
+        if (results.affectedRows === 0) {
+          return next(new ErrorHandler("Masjeed Not Found", 404));
+        }
+
+        res.json({ success: true, message: "Updated masjeed" });
+      }
+    );
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});

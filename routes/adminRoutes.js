@@ -14,4 +14,4 @@ adminRouter.post("/forgetpassword", forgotPassword);
 
 adminRouter.post("/adminotpverfiysend", verifyEmailOTPSend);
 
-adminRouter.post("/updateTimingRow", updateTimingRow);
+adminRouter.put("/updateTimingRow", updateTimingRow);

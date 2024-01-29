@@ -2,6 +2,7 @@ import express from "express";
 import {
   approveMasjeed,
   masjeedsList,
+  rejectMasjeed,
   superAdminLogin,
   superAdminRegistration,
 } from "../controllers/superAdminController.js";
@@ -20,3 +21,10 @@ superadminrouter.get(
   isAuthenticatedSuperAdmin,
   approveMasjeed
 );
+
+superadminrouter.get(
+  "/rejectmasjeed/:id",
+  isAuthenticatedSuperAdmin,
+  rejectMasjeed
+);
+

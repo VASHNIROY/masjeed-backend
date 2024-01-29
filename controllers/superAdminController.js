@@ -89,8 +89,6 @@ export const superAdminLogin = CatchAsyncError(async (req, res, next) => {
   }
 });
 
-
-
 export const masjeedsList = CatchAsyncError(async (req, res, next) => {
   try {
     const getMasjeedsQuery = `SELECT * FROM masjeed WHERE status = 1`;
@@ -109,6 +107,8 @@ export const masjeedsList = CatchAsyncError(async (req, res, next) => {
   }
 });
 
+/* approved masjeeds status = 1 */
+/* rejected masjeeds status = 0 */
 export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
   try {
     const masjeedId = req.params.id;
@@ -136,10 +136,13 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
           if (masjeedDetails.length === 0) {
             return next(new ErrorHandler("masjeed not found", 404));
           }
+
+
           const name = masjeedDetails[0].adminname;
           const email = masjeedDetails[0].email;
           const phonenumber = masjeedDetails[0].phonenumber;
           console.log(name, email, phonenumber);
+          
 
           const addadminQuery = `INSERT INTO admin(name,email,password,status,phonenumber) VALUES(?,?,?,?,?)`;
 
@@ -151,6 +154,8 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
                 console.log(error);
                 return next(new ErrorHandler("Internal Server Error", 500));
               }
+
+            
 
               const transporter = nodemailerConfig();
               const mailOptions = {
@@ -199,14 +204,50 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
                   const sheetName = workbook.SheetNames[0];
                   const sheet = workbook.Sheets[sheetName];
 
+                  const secondsheetName = workbook.SheetNames[1];
+                  const secondsheet = workbook.Sheets[secondsheetName];
+
                   // Parse Excel data
-                  const excelData = xlsx.utils.sheet_to_json(sheet, {
+                  const prayertimingsData = xlsx.utils.sheet_to_json(sheet, {
                     raw: false,
                     range: 11,
                   });
 
+                  // Parse Excel data
+                  const iqamahData = xlsx.utils.sheet_to_json(secondsheet, {
+                    raw: false,
+                    range: 1,
+                  });
+
+                  const convertedData = iqamahData.map((data) => {
+                    const convertedValues = {};
+                    for (const key in data) {
+                      const value = data[key];
+
+                      // Exclude "Jumah Adhan" from conversion
+                      if (key === "Jumah Adhan") {
+                        convertedValues[key] = value;
+                      } else {
+                        const value = data[key];
+                        const intValue = parseInt(value, 10);
+                        convertedValues[key] = isNaN(intValue)
+                          ? value
+                          : intValue;
+                      }
+                    }
+                    return convertedValues;
+                  });
+
+                  const commonData = convertedData[0];
+
+                  // Merge common data
+                  const mergedData = prayertimingsData.map((item) => {
+                    // Merge the common data into each item using object spreading
+                    return { ...item, ...commonData };
+                  });
+
                   // Insert data into prayertimingstable
-                  excelData.forEach((row) => {
+                  mergedData.forEach((row) => {
                     const {
                       Month,
                       Day,
@@ -216,11 +257,24 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
                       "Asr Adhan": AsrAdhan,
                       "Maghrib Adhan": MaghribAdhan,
                       "Isha Adhan": IshaAdhan,
+                      "Fajr Iqamah": FajrIqamah,
+                      "Dhuhr Iqamah": DhuhrIqamah,
+                      "Asr Iqamah": AsrIqamah,
+                      "Maghrib Iqamah": MaghribIqamah,
+                      "Isha Iqamah": IshaIqamah,
+                      "Jumah Adhan": JumahAdhan,
+                      "Jumah Khutba duration": JumahKhutbaDuration,
                     } = row;
 
                     const insertQuery = `
-              INSERT INTO prayertimingstable (masjeedid, day, month, fajr, shouruq, dhuhr, asr, maghrib, isha)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+              INSERT INTO prayertimingstable (masjeedid, day, month, fajr, shouruq, dhuhr, asr, maghrib, isha,fajriqamah,
+                dhuhriqamah,
+                asriqamah,
+                maghribiqamah,
+               ishaiqamah,
+                jumahadhan,
+                Jumahkhutbaduration)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?)
             `;
 
                     connection.query(
@@ -235,6 +289,14 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
                         AsrAdhan,
                         MaghribAdhan,
                         IshaAdhan,
+
+                        FajrIqamah,
+                        DhuhrIqamah,
+                        AsrIqamah,
+                        MaghribIqamah,
+                        IshaIqamah,
+                        JumahAdhan,
+                        JumahKhutbaDuration,
                       ],
                       (insertError) => {
                         if (insertError) {
@@ -250,7 +312,10 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
                     );
                   });
 
-                  res.json({ success: true, message: "Inserted Successfully" });
+                  res.json({
+                    success: true,
+                    message: "Inserted Successfully",
+                  });
                 }
               );
             }
@@ -262,3 +327,54 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
+export const rejectMasjeed = CatchAsyncError(async (req, res, next) => {
+  const masjeedid = req.params.id;
+
+  try {
+    const masjeedDetailsQuery =
+      "SELECT adminname,email FROM masjeed WHERE id = ?;";
+
+    connection.query(
+      masjeedDetailsQuery,
+      [masjeedid],
+      (gettingErr, masjeedDetails) => {
+        if (gettingErr) {
+          console.log("Error While fetching masjeed Details");
+          return next(new ErrorHandler("Internal Server Error", 500));
+        }
+
+        if (masjeedDetails.length === 0) {
+          return next(new ErrorHandler("masjeed not found", 404));
+        }
+        const name = masjeedDetails[0].adminname;
+        const email = masjeedDetails[0].email;
+
+        const transporter = nodemailerConfig();
+        const mailOptions = {
+          from: process.env.SMTP_MAIL,
+          to: email,
+          subject: "Welcome to Mymasjeed. Rejected Your Request",
+          html: `
+        <p>Dear ${name},</p>
+        <p>Thank you for requesting My Masjeed.Unfortunately your request has been rejected.</p>
+        <p>Please contact the adminstrator for further details.</p>
+      `,
+        };
+
+        transporter.sendMail(mailOptions, (emailError, info) => {
+          if (emailError) {
+            console.log(emailError);
+            return next(new ErrorHandler("Email could not be sent", 500));
+          }
+        });
+      }
+    );
+
+    res.json({ success: true, message: "Rejected Masjeed" });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
+

@@ -32,38 +32,50 @@ export const addMasjeed = CatchAsyncError(async (req, res, next) => {
       return;
     }
 
-    const addMasjeedQuery = `INSERT INTO masjeed (adminname,masjeedname,status,address,email,postalcode,city,state,country,phonenumber,prayerdetails) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
+    const verifyEmailQuery = `SELECT email FROM masjeed WHERE email = ?`;
 
-    connection.query(
-      addMasjeedQuery,
-      [
-        adminname,
-        masjeedname,
-        0,
-        address,
-        email,
-        postalcode,
-        city,
-        state,
-        country,
-        phonenumber,
-        filename,
-      ],
-      (insertError) => {
-        if (insertError) {
-          console.error(
-            "Error inserting filename into the database:",
-            insertError
-          );
-          return next(new ErrorHandler("Internal Server Error", 500));
-        }
-
-        console.log("Masjeed inserted into the database");
-        res
-          .status(200)
-          .json({ success: true, message: "File uploaded successfully" });
+    connection.query(verifyEmailQuery, [email], (error, results) => {
+      if (error) {
+        return next(new ErrorHandler(error.message, 500));
       }
-    );
+
+      if (results.length > 0) {
+        return next(new ErrorHandler("Email already exists", 400));
+      }
+
+      const addMasjeedQuery = `INSERT INTO masjeed (adminname,masjeedname,status,address,email,postalcode,city,state,country,phonenumber,prayerdetails) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
+
+      connection.query(
+        addMasjeedQuery,
+        [
+          adminname,
+          masjeedname,
+          0,
+          address,
+          email,
+          postalcode,
+          city,
+          state,
+          country,
+          phonenumber,
+          filename,
+        ],
+        (insertError) => {
+          if (insertError) {
+            console.error(
+              "Error inserting filename into the database:",
+              insertError
+            );
+            return next(new ErrorHandler("Internal Server Error", 500));
+          }
+
+          console.log("Masjeed inserted into the database");
+          res
+            .status(200)
+            .json({ success: true, message: "File uploaded successfully" });
+        }
+      );
+    });
   } catch (error) {
     console.log("Error:", error);
     return next(new ErrorHandler(error.message, 400));
