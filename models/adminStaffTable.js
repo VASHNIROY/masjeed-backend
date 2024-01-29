@@ -1,4 +1,4 @@
-const adminStaffTable = `
+export const adminStaffTable = `
     CREATE TABLE IF NOT EXISTS adminstaff(
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255),

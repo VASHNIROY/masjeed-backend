@@ -79,7 +79,7 @@ export const superAdminLogin = CatchAsyncError(async (req, res, next) => {
           email: results[0].email,
         };
         const jwt_token = jwt.sign(payload, SECRET_KEY);
-        res.send({ jwt_token });
+        res.send({ jwt_token, message: "Login Successful" });
       } else {
         return next(new ErrorHandler("Invalid Password", 400));
       }
@@ -106,8 +106,6 @@ export const masjeedsList = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
-
-
 
 export const newMasjeeds = CatchAsyncError(async (req, res, next) => {
   try {
@@ -157,12 +155,10 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
             return next(new ErrorHandler("masjeed not found", 404));
           }
 
-
           const name = masjeedDetails[0].adminname;
           const email = masjeedDetails[0].email;
           const phonenumber = masjeedDetails[0].phonenumber;
           console.log(name, email, phonenumber);
-          
 
           const addadminQuery = `INSERT INTO admin(name,email,password,status,phonenumber) VALUES(?,?,?,?,?)`;
 
@@ -174,8 +170,6 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
                 console.log(error);
                 return next(new ErrorHandler("Internal Server Error", 500));
               }
-
-            
 
               const transporter = nodemailerConfig();
               const mailOptions = {

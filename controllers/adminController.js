@@ -231,9 +231,12 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
       state,
       country,
       phonenumber,
-      
-      prayerdetails,
     } = req.body;
+
+    if (!filename) {
+      res.status(400).json({ error: "No file uploaded" });
+      return;
+    }
 
     connection.query(
       masjeedUpdateQuery,
@@ -247,8 +250,7 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
         state,
         country,
         phonenumber,
-      
-        prayerdetails,
+        filename,
         masjeedid,
       ],
       (updateErr, results) => {
