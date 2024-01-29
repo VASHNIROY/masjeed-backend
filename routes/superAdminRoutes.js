@@ -2,6 +2,7 @@ import express from "express";
 import {
   approveMasjeed,
   masjeedsList,
+  newMasjeeds,
   rejectMasjeed,
   superAdminLogin,
   superAdminRegistration,
@@ -15,6 +16,8 @@ superadminrouter.post("/superadminregistration", superAdminRegistration);
 superadminrouter.post("/superadminlogin", superAdminLogin);
 
 superadminrouter.get("/getmasjeeds", isAuthenticatedSuperAdmin, masjeedsList);
+
+superadminrouter.get("/newmasjeeds",isAuthenticatedSuperAdmin, newMasjeeds);
 
 superadminrouter.get(
   "/approvemasjeed/:id",

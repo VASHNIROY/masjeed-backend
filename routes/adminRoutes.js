@@ -18,3 +18,4 @@ adminRouter.post("/adminotpverfiysend", verifyEmailOTPSend);
 adminRouter.put("/updateTimingRow", updateTimingRow);
 
 adminRouter.put("/updatemasjeeddetails/:id", updateMasjeedDetails);
+
