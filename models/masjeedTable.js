@@ -9,7 +9,7 @@ export const createMasjeedTable = `
               city VARCHAR(255) NOT NULL,
              state VARCHAR(255) NOT NULL,
              country VARCHAR(255) NOT NULL,
-            phonenumber INT NOT NULL,
+            phonenumber VARCHAR(20) NOT NULL,
             status INT,
         prayerdetails VARCHAR(255) NOT NULL
   );`;
