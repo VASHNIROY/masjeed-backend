@@ -4,6 +4,7 @@ import path from "path";
 import {
   addAdminStaff,
   editAdminStaffMember,
+  editIqamah,
   forgotPassword,
   getMasjeedTimings,
   updateMasjeedDetails,
@@ -44,3 +45,5 @@ adminRouter.put(
 adminRouter.post("/addadminstaff", addAdminStaff);
 
 adminRouter.put("/editadminstaffmember/:id", editAdminStaffMember);
+
+adminRouter.put("/editIqamah/:id", editIqamah);

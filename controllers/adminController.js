@@ -355,3 +355,43 @@ export const editAdminStaffMember = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
+export const editIqamah = CatchAsyncError(async (req, res, next) => {
+  try {
+    const masjeedid = req.params.id;
+    const {
+      fajriqamah,
+      dhuhriqamah,
+      asriqamah,
+      maghribiqamah,
+      ishaiqamah,
+      jumahadhan,
+      jumahiqamah,
+    } = req.body;
+
+    const updateiqamahQuery = `UPDATE prayertimingstable SET fajriqamah = ?, dhuhriqamah = ?, asriqamah = ?, maghribiqamah = ?, ishaiqamah = ?, jumahadhan = ?, jumahkhutbaduration = ? WHERE masjeedid = ?`;
+
+    connection.query(
+      updateiqamahQuery,
+      [
+        fajriqamah,
+        dhuhriqamah,
+        asriqamah,
+        maghribiqamah,
+        ishaiqamah,
+        jumahadhan,
+        jumahiqamah,
+        masjeedid,
+      ],
+      (error, results) => {
+        if (error) {
+          return next(new ErrorHandler(error.message, 500));
+        }
+
+        res.json({ success: true, message: "Iqamah Updated" });
+      }
+    );
+  } catch (error) {
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+});
