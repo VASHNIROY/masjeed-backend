@@ -33,7 +33,7 @@ webRouter.get("/getTodaySchedule/:id", todaySchedule);
 
 webRouter.get("/getCountries", databaseCountries);
 
-webRouter.post("getStates", databaseStates);
+webRouter.post("/getStates", databaseStates);
 
 webRouter.post("/getCities", databaseCities);
 
