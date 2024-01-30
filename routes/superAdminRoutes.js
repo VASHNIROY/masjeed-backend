@@ -19,15 +19,14 @@ superadminrouter.get("/getmasjeeds", isAuthenticatedSuperAdmin, masjeedsList);
 
 superadminrouter.get("/newmasjeeds",isAuthenticatedSuperAdmin, newMasjeeds);
 
-superadminrouter.get(
+superadminrouter.put(
   "/approvemasjeed/:id",
   isAuthenticatedSuperAdmin,
   approveMasjeed
 );
 
-superadminrouter.get(
+superadminrouter.put(
   "/rejectmasjeed/:id",
   isAuthenticatedSuperAdmin,
   rejectMasjeed
 );
-

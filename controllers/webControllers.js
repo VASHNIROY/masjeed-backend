@@ -131,3 +131,63 @@ export const todaySchedule = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
+export const databaseCountries = CatchAsyncError(async (req, res, next) => {
+  try {
+    const coutriesQuery = `SELECT DISTINCT country FROM masjeed WHERE country IS NOT NULL AND status = 1 ORDER BY country ASC `;
+    connection.query(coutriesQuery, (selectError, results) => {
+      if (selectError) {
+        console.error("Error fetching countries from the database:");
+        return next(new ErrorHandler("Internal Server Error", 500));
+      }
+      if (results.length === 0) {
+        return next(new ErrorHandler("No Countries Found", 404));
+      }
+
+      res.json({ success: true, message: "Fetched Countries", data: results });
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
+export const databaseStates = CatchAsyncError(async (req, res, next) => {
+  try {
+    const { country } = req.body;
+
+    const statesQuery = `SELECT DISTINCT state FROM masjeed WHERE country = ? AND state IS NOT NULL AND status = 1 ORDER BY state ASC`;
+
+    connection.query(statesQuery, [country], (selectError, results) => {
+      if (selectError) {
+        console.error("Error fetching states from the database:");
+        return next(new ErrorHandler("Internal Server Error", 500));
+      }
+      if (results.length === 0) {
+        return next(new ErrorHandler("No States Found", 404));
+      }
+      res.json({ success: true, message: "Fetched States", data: results });
+    });
+  } catch (error) {
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+});
+
+export const databaseCities = CatchAsyncError(async (req, res, next) => {
+  try {
+    const { country, state } = req.body;
+    const citiesQuery = `SELECT DISTINCT city FROM masjeed WHERE country = ? AND state = ? AND city IS NOT NULL AND status = 1 ORDER BY city ASC`;
+    connection.query(citiesQuery, [country, state], (selectError, results) => {
+      if (selectError) {
+        console.error("Error fetching cities from the database:");
+        return next(new ErrorHandler("Internal Server Error", 500));
+      }
+      if (results.length === 0) {
+        return next(new ErrorHandler("No Cities Found", 404));
+      }
+
+      res.json({ success: true, message: "Fetched Cities", data: results });
+    });
+  } catch (error) {
+    return next(new ErrorHandler("Internal Sever Error", 500));
+  }
+});
