@@ -171,15 +171,48 @@ export const updateTimingRow = CatchAsyncError(async (req, res, next) => {
     connection.query(
       updateTimingQuery,
       [fajr, shouruq, dhuhr, asr, maghrib, isha, masjeedid, day, month],
-      (selectErr, results) => {
-        if (selectErr) {
-          console.log("Error while updating timings in Database", selectErr);
+      async (updateErr, updateResults) => {
+        if (updateErr) {
+          console.log("Error while updating timings in Database", updateErr);
           return next(new ErrorHandler("Internal Server Error", 500));
         }
-        if (results.length === 0) {
+
+        if (updateResults.affectedRows === 0) {
           return next(new ErrorHandler("Timings Not Found", 404));
         }
-        res.json({ success: true, message: "upated Timings" });
+
+        // Fetch the updated row from the database
+        const selectUpdatedRowQuery = `
+          SELECT * FROM prayertimingstable
+          WHERE masjeedid = ? AND day = ? AND month = ?;
+        `;
+
+        connection.query(
+          selectUpdatedRowQuery,
+          [masjeedid, day, month],
+          (selectErr, selectResults) => {
+            if (selectErr) {
+              console.log(
+                "Error while fetching updated timings from Database",
+                selectErr
+              );
+              return next(new ErrorHandler("Internal Server Error", 500));
+            }
+
+            if (selectResults.length === 0) {
+              return next(new ErrorHandler("Updated Timings Not Found", 404));
+            }
+
+            const updatedRow = selectResults[0];
+
+            // Send the updated row as a response
+            res.json({
+              success: true,
+              message: "Updated Timings",
+              data: updatedRow,
+            });
+          }
+        );
       }
     );
   } catch (error) {
