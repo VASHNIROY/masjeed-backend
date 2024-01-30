@@ -2,7 +2,13 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 
-import { addMasjeed, todaySchedule } from "../controllers/webControllers.js";
+import {
+  addMasjeed,
+  databaseCities,
+  databaseCountries,
+  databaseStates,
+  todaySchedule,
+} from "../controllers/webControllers.js";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -23,3 +29,9 @@ export const webRouter = express.Router();
 webRouter.post("/addmasjeed", upload.single("file"), addMasjeed);
 
 webRouter.get("/getTodaySchedule/:id", todaySchedule);
+
+webRouter.get("/getCountries", databaseCountries);
+
+webRouter.get("getStates", databaseStates);
+
+webRouter.get("/getCities", databaseCities);
