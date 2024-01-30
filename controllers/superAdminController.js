@@ -90,9 +90,11 @@ export const superAdminLogin = CatchAsyncError(async (req, res, next) => {
 });
 
 export const masjeedsList = CatchAsyncError(async (req, res, next) => {
+  console.log("triggered")
   try {
     const getMasjeedsQuery = `SELECT * FROM masjeed WHERE status = 1`;
     connection.query(getMasjeedsQuery, (selectErr, results) => {
+      console.log("triggered2")
       if (selectErr) {
         console.log("Error fetching masjeeds from Database", selectErr);
         return next(new ErrorHandler("Internal Server Error", 500));
@@ -103,6 +105,7 @@ export const masjeedsList = CatchAsyncError(async (req, res, next) => {
       res.json({ success: true, message: "Fetched masjeeds", data: results });
     });
   } catch (error) {
+    console.log("getting error");
     return next(new ErrorHandler(error.message, 400));
   }
 });

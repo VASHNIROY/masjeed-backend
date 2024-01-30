@@ -5,15 +5,6 @@ import nodemailerConfig from "../utils/nodemailer.js";
 
 import { fileURLToPath } from "url";
 
-import xlsx from "xlsx";
-import path from "path";
-
-import { dirname } from "path";
-
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 function generateOTP() {
   // Generate a 4-digit random OTP
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -217,17 +208,16 @@ export const getMasjeedDetails = CatchAsyncError(async (req, res, next) => {
 
 export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
   try {
-    const masjeedid = req.params.id;
     const filename = req.file ? req.file.filename : null;
 
-    const masjeedUpdateQuery = `UPDATE masjeed SET adminname = ?, masjeedname = ?, address =? , email = ?, postalcode = ?, city = ?, state = ?, country = ?, phonenumber = ?, prayerdetails = ? WHERE id = ?`;
+    const masjeedUpdateQuery = `UPDATE masjeed SET adminname = ?, masjeedname = ?, address =? , postalcode = ?, city = ?, state = ?, country = ?, phonenumber = ?, prayerdetails = ? WHERE email = ?`;
     const {
       adminname,
       masjeedname,
       address,
-      email,
       postalcode,
       city,
+      email,
       state,
       country,
       phonenumber,
@@ -244,14 +234,13 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
         adminname,
         masjeedname,
         address,
-        email,
         postalcode,
         city,
         state,
         country,
         phonenumber,
         filename,
-        masjeedid,
+        email,
       ],
       (updateErr, results) => {
         if (updateErr) {
@@ -263,7 +252,7 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
           return next(new ErrorHandler("Masjeed Not Found", 404));
         }
 
-        res.json({ success: true, message: "Updated masjeed" });
+        res.json({ success: true, message: "masjeed updated successfully" });
       }
     );
   } catch (error) {
@@ -271,13 +260,98 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
   }
 });
 
-export const addAdminStaff = CatchAsyncError(async (req,res, next) => {
+export const addAdminStaff = CatchAsyncError(async (req, res, next) => {
   try {
-    const { name, email, password, phonenumber, comment, masjeedid, roleid } = req.body
+    const verifyEmailQuery = `SELECT email FROM adminstaff WHERE email = ?`;
 
-    const addAdminStaffQuery = `INSERT INTO adminstaff(name, email, password, phonenumber, comment, masjeedid, roleid, status) VALUES()`
+    connection.query(verifyEmailQuery, [req.body.email], (error, results) => {
+      if (error) {
+        return next(new ErrorHandler(error.message, 500));
+      }
 
-  }catch(error){
-    return next(new ErrorHandler(error.message, 400))
+      if (results.length > 0) {
+        return next(new ErrorHandler("Email already exists", 400));
+      }
+
+      const { name, email, phonenumber, comment, masjeedid, roleid } = req.body;
+
+      const addAdminStaffQuery = `INSERT INTO adminstaff(name, email, password, phonenumber, comment, masjeedid, roleid, status) VALUES(?, ?, ?, ?, ?, ?, ?, ?)`;
+
+      connection.query(
+        addAdminStaffQuery,
+        [name, email, 123456, phonenumber, comment, masjeedid, roleid, 1],
+        (insertErr, results) => {
+          if (insertErr) {
+            console.log(
+              "Error while inserting admin staff in Database",
+              insertErr
+            );
+            return next(new ErrorHandler("Internal Server Error", 500));
+          }
+
+          res.json({ success: true, message: "Admin Staff Added" });
+
+          const transporter = nodemailerConfig();
+          const mailOptions = {
+            from: process.env.SMTP_MAIL,
+            to: email,
+            subject: "Welcome to Mymasjeed Staff",
+            html: `
+            <p>Dear ${name},</p>
+            <p>We are delighted to have you as part of our community, and we want to extend a warm welcome to you.</p>
+            <p>This is your email ${email} and password is 123456</p>
+          `,
+          };
+
+          transporter.sendMail(mailOptions, (emailError, info) => {
+            if (emailError) {
+              console.log(emailError);
+              return next(new ErrorHandler("Email could not be sent", 500));
+            }
+          });
+        }
+      );
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
   }
-})
+});
+
+export const editAdminStaffMember = CatchAsyncError(async (req, res, next) => {
+  try {
+    const masjeedid = req.params.id;
+    const { name, email, phonenumber, comment, roleid } = req.body;
+
+    const checkEmail = `SELECT email FROM adminstaff WHERE email = ? AND masjeedid = ?`;
+
+    connection.query(checkEmail, [email, masjeedid], (error, results) => {
+      if (error) {
+        return next(new ErrorHandler(error.message, 500));
+      }
+
+      if (results.length > 0) {
+        return next(new ErrorHandler("Email already exists", 400));
+      }
+
+      const editAdminStaffMember = `UPDATE adminstaff SET name = ?, phonenumber = ?, comment = ?, roleid = ? WHERE email = ? AND masjeedid = ?`;
+
+      connection.query(
+        editAdminStaffMember,
+        [name, phonenumber, comment, roleid, email, masjeedid],
+        (error, results) => {
+          if (error) {
+            return next(new ErrorHandler(error.message, 500));
+          }
+
+          if (results.affectedRows === 0) {
+            return next(new ErrorHandler("Admin Staff Not Found", 404));
+          }
+
+          res.json({ success: true, message: "Admin Staff Updated" });
+        }
+      );
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});

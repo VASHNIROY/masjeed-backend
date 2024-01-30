@@ -153,7 +153,7 @@ export const databaseCountries = CatchAsyncError(async (req, res, next) => {
 
 export const databaseStates = CatchAsyncError(async (req, res, next) => {
   try {
-    const { country } = req.body;
+    const { country} = req.query;
 
     const statesQuery = `SELECT DISTINCT state FROM masjeed WHERE country = ? AND state IS NOT NULL AND status = 1 ORDER BY state ASC`;
 
@@ -174,7 +174,7 @@ export const databaseStates = CatchAsyncError(async (req, res, next) => {
 
 export const databaseCities = CatchAsyncError(async (req, res, next) => {
   try {
-    const { country, state } = req.body;
+    const { country, state } = req.params;
     const citiesQuery = `SELECT DISTINCT city FROM masjeed WHERE country = ? AND state = ? AND city IS NOT NULL AND status = 1 ORDER BY city ASC`;
     connection.query(citiesQuery, [country, state], (selectError, results) => {
       if (selectError) {
@@ -194,7 +194,7 @@ export const databaseCities = CatchAsyncError(async (req, res, next) => {
 
 export const databaseMasjeeds = CatchAsyncError(async (req, res, next) => {
   try {
-    const { country, state, city } = req.body;
+    const { country, state, city } = req.params;
 
     const databasemasjeedsQuery = `SELECT id, masjeedname FROM masjeed WHERE country = ? AND state = ? AND city = ? AND status = 1 ORDER BY masjeedname ASC`;
 
