@@ -191,3 +191,29 @@ export const databaseCities = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("Internal Sever Error", 500));
   }
 });
+
+export const databaseMasjeeds = CatchAsyncError(async (req, res, next) => {
+  try {
+    const { country, state, city } = req.body;
+
+    const databasemasjeedsQuery = `SELECT id, masjeedname FROM masjeed WHERE country = ? AND state = ? AND city = ? AND status = 1 ORDER BY masjeedname ASC`;
+
+    connection.query(
+      databasemasjeedsQuery,
+      [country, state, city],
+      (selectError, results) => {
+        if (selectError) {
+          console.error("Error fetching masjeeds from the database:");
+          return next(new ErrorHandler("Internal Server Error", 500));
+        }
+        if (results.length === 0) {
+          return next(new ErrorHandler("No masjeeds Found", 404));
+        }
+
+        res.json({ success: true, message: "Fetched masjeeds", data: results });
+      }
+    );
+  } catch (error) {
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+});

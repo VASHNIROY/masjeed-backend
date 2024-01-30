@@ -6,6 +6,7 @@ import {
   addMasjeed,
   databaseCities,
   databaseCountries,
+  databaseMasjeeds,
   databaseStates,
   todaySchedule,
 } from "../controllers/webControllers.js";
@@ -35,3 +36,5 @@ webRouter.get("/getCountries", databaseCountries);
 webRouter.get("getStates", databaseStates);
 
 webRouter.get("/getCities", databaseCities);
+
+webRouter.get("/getwebmasjeeds", databaseMasjeeds);
