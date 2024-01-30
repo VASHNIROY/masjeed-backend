@@ -389,6 +389,29 @@ export const editAdminStaffMember = CatchAsyncError(async (req, res, next) => {
   }
 });
 
+export const getIqamahDetails = CatchAsyncError(async (req, res, next) => {
+  try {
+    const masjeedid = req.params.id;
+    const getIqamahDetailsQuery = `SELECT  fajriqamah,
+    dhuhriqamah,
+    asriqamah,
+    maghribiqamah,
+    ishaiqamah,
+    jumahadhan,
+    jumahkhutbaduration FROM prayertimingstable WHERE masjeedid = ?`;
+
+    connection.query(getIqamahDetailsQuery, [masjeedid], (error, results) => {
+      if (error) {
+        return next(new ErrorHandler(error.message, 500));
+      }
+
+      res.json({ success: true, data: results[0] });
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
 export const editIqamah = CatchAsyncError(async (req, res, next) => {
   try {
     const masjeedid = req.params.id;

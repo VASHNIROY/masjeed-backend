@@ -3,9 +3,12 @@ import multer from "multer";
 import path from "path";
 import {
   addAdminStaff,
+  adminLogin,
   editAdminStaffMember,
   editIqamah,
   forgotPassword,
+  getIqamahDetails,
+  getMasjeedDetails,
   getMasjeedTimings,
   updateMasjeedDetails,
   updateTimingRow,
@@ -28,6 +31,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+adminRouter.post("/adminlogin", adminLogin);
+
 adminRouter.get("/getmasjeedtimings/:id", getMasjeedTimings);
 
 adminRouter.post("/forgetpassword", forgotPassword);
@@ -42,8 +47,12 @@ adminRouter.put(
   updateMasjeedDetails
 );
 
+adminRouter.get("/getmasjeeddetails/:id", getMasjeedDetails);
+
 adminRouter.post("/addadminstaff", addAdminStaff);
 
 adminRouter.put("/editadminstaffmember/:id", editAdminStaffMember);
 
 adminRouter.put("/editIqamah/:id", editIqamah);
+
+adminRouter.get("/getiqamahtimigs/:id", getIqamahDetails);

@@ -86,7 +86,7 @@ export const todaySchedule = CatchAsyncError(async (req, res, next) => {
   try {
     const masjeedid = req.params.id;
     // Fetch filename from the database
-    const selectQuery = "SELECT prayerdetails FROM masjeed WHERE id = ?";
+    const selectQuery = "SELECT * FROM prayertimingstable WHERE masjeedid = ?";
 
     connection.query(selectQuery, [masjeedid], (selectError, results) => {
       if (selectError) {
@@ -97,34 +97,17 @@ export const todaySchedule = CatchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler("Internal Server Error", 500));
       }
 
-      if (results.length === 0) {
-        return next(new ErrorHandler("File not found", 404));
-      }
-
-      const filename = results[0].prayerdetails;
-      // Read the Excel file
-      const filePath = path.join(__dirname, "../uploads", filename);
-      const workbook = xlsx.readFile(filePath);
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-
-      // Parse Excel data
-      const excelData = xlsx.utils.sheet_to_json(sheet, {
-        raw: false,
-        range: 11,
-      });
-
       // Get today's date
       const today = new Date();
       const todayMonth = today.getMonth() + 1; // Month is 0-indexed in JavaScript
       const todayDay = today.getDate();
       // Filter data for today's month and day
 
-      const todaySchedule = excelData.filter((row) => {
-        return row.Month == todayMonth && row.Day == todayDay;
+      const todaySchedule = results.filter((row) => {
+        return row.month == todayMonth && row.day == todayDay;
       });
 
-      res.json({ excelData });
+      res.json({ todaySchedule });
     });
   } catch (error) {
     console.log("Error:", error);
