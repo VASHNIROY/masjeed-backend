@@ -2,6 +2,8 @@ import CatchAsyncError from "../middleware/catchAsyncError.js";
 import ErrorHandler from "../utils/ErrorHandler.js";
 import { connection } from "../utils/db.js";
 import nodemailerConfig from "../utils/nodemailer.js";
+import jwt from "jsonwebtoken";
+
 import bcrypt from "bcrypt";
 
 import { fileURLToPath } from "url";
@@ -10,6 +12,8 @@ function generateOTP() {
   // Generate a 4-digit random OTP
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
+
+const SECRET_KEY = "uK8Tgvho1Y";
 
 export const adminLogin = CatchAsyncError(async (req, res, next) => {
   try {
@@ -31,7 +35,7 @@ export const adminLogin = CatchAsyncError(async (req, res, next) => {
           email: results[0].email,
         };
         const jwt_token = jwt.sign(payload, SECRET_KEY);
-        res.send({ jwt_token });
+        res.send({ jwt_token, message: "LoggedIn Succesfully" });
       } else {
         return next(new ErrorHandler("Invalid Password", 400));
       }
