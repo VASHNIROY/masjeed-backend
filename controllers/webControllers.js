@@ -82,6 +82,40 @@ export const addMasjeed = CatchAsyncError(async (req, res, next) => {
   }
 });
 
+// export const todaySchedule = CatchAsyncError(async (req, res, next) => {
+//   try {
+//     const masjeedid = req.params.id;
+//     // Fetch filename from the database
+//     const selectQuery = "SELECT * FROM prayertimingstable WHERE masjeedid = ?";
+
+//     connection.query(selectQuery, [masjeedid], (selectError, results) => {
+//       if (selectError) {
+//         console.error(
+//           "Error fetching prayerdetails from the database:",
+//           selectError
+//         );
+//         return next(new ErrorHandler("Internal Server Error", 500));
+//       }
+
+//       // Get today's date
+//       const today = new Date();
+//       const todayMonth = today.getMonth() + 1; // Month is 0-indexed in JavaScript
+//       const todayDay = today.getDate();
+//       // Filter data for today's month and day
+
+//       const todaySchedule = results.filter((row) => {
+//         return row.month == todayMonth && row.day == todayDay;
+//       });
+
+//       res.json({ todaySchedule });
+//     });
+//   } catch (error) {
+//     console.log("Error:", error);
+//     return next(new ErrorHandler(error.message, 400));
+//   }
+// });
+
+
 export const todaySchedule = CatchAsyncError(async (req, res, next) => {
   try {
     const masjeedid = req.params.id;
@@ -91,7 +125,7 @@ export const todaySchedule = CatchAsyncError(async (req, res, next) => {
     connection.query(selectQuery, [masjeedid], (selectError, results) => {
       if (selectError) {
         console.error(
-          "Error fetching prayerdetails from the database:",
+          "Error fetching prayer details from the database:",
           selectError
         );
         return next(new ErrorHandler("Internal Server Error", 500));
@@ -103,17 +137,75 @@ export const todaySchedule = CatchAsyncError(async (req, res, next) => {
       const todayDay = today.getDate();
       // Filter data for today's month and day
 
-      const todaySchedule = results.filter((row) => {
-        return row.month == todayMonth && row.day == todayDay;
-      });
+      console.log(results, todayMonth, todayDay, "kapil");
 
-      res.json({ todaySchedule });
+      const todayTimeSchedule = results.filter(
+        (row) => row.month == todayMonth && row.day == todayDay
+      );
+
+      console.log(todaySchedule, "ram");
+
+      const todayTimings = [
+        ...todayTimeSchedule.map((row) => ({
+          id:"1",
+          name: 'fajr',
+          starttime: row.fajr,
+          endtime: calculateEndTime(row.fajr, row.fajriqamah),
+        })),
+        ...todayTimeSchedule.map((row) => ({
+          id:"2",
+          name: 'dhuhr',
+          starttime: row.dhuhr,
+          endtime: calculateEndTime(row.dhuhr, row.dhuhriqamah),
+        })),
+        ...todayTimeSchedule.map((row) => ({
+          id:"3",
+          name: 'asr',
+          starttime: row.asr,
+          endtime: calculateEndTime(row.asr, row.asriqamah),
+        })),
+        ...todayTimeSchedule.map((row) => ({
+          id:"4",
+          name: 'maghrib',
+          starttime: row.maghrib,
+          endtime: calculateEndTime(row.maghrib, row.maghribiqamah),
+        })),
+        ...todayTimeSchedule.map((row) => ({
+          id:"5",
+          name: 'isha',
+          starttime: row.isha,
+          endtime: calculateEndTime(row.isha, row.ishaiqamah),
+        })),
+      ];
+
+      res.json({ todayTimings });
     });
   } catch (error) {
     console.log("Error:", error);
     return next(new ErrorHandler(error.message, 400));
   }
 });
+
+
+
+
+
+
+function calculateEndTime(startTime, iqamah) {
+  // Assuming iqamah time is given in minutes
+  const startTimeParts = startTime.split(':');
+  const hours = parseInt(startTimeParts[0]);
+  const minutes = parseInt(startTimeParts[1]);
+
+  const iqamahMinutes = parseInt(iqamah);
+
+  const endMinutes = minutes + iqamahMinutes;
+  const endHours = hours + Math.floor(endMinutes / 60);
+  const formattedEndMinutes = endMinutes % 60;
+
+  return `${endHours}:${formattedEndMinutes}`;
+}
+
 
 export const databaseCountries = CatchAsyncError(async (req, res, next) => {
   try {
