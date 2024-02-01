@@ -164,7 +164,7 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
           console.log(name, email, phonenumber);
 
           const addadminQuery = `INSERT INTO admin(name,email,password,status,phonenumber) VALUES(?,?,?,?,?)`;
-          const password = 123456;
+          const password = "123456";
 
           bcrypt.hash(password, 10, (err, hashedPassword) => {
             if (err) {

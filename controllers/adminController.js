@@ -2,6 +2,7 @@ import CatchAsyncError from "../middleware/catchAsyncError.js";
 import ErrorHandler from "../utils/ErrorHandler.js";
 import { connection } from "../utils/db.js";
 import nodemailerConfig from "../utils/nodemailer.js";
+import bcrypt from "bcrypt";
 
 import { fileURLToPath } from "url";
 
