@@ -13,7 +13,7 @@ function generateOTP() {
 export const adminLogin = CatchAsyncError(async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const verifyemailQuery = "SELECT * from superadmin WHERE email = ?";
+    const verifyemailQuery = "SELECT * from admin WHERE email = ?";
 
     connection.query(verifyemailQuery, [email], async (error, results) => {
       if (error) {
