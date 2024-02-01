@@ -90,11 +90,11 @@ export const superAdminLogin = CatchAsyncError(async (req, res, next) => {
 });
 
 export const masjeedsList = CatchAsyncError(async (req, res, next) => {
-  console.log("triggered")
+  console.log("triggered");
   try {
     const getMasjeedsQuery = `SELECT * FROM masjeed WHERE status = 1`;
     connection.query(getMasjeedsQuery, (selectErr, results) => {
-      console.log("triggered2")
+      console.log("triggered2");
       if (selectErr) {
         console.log("Error fetching masjeeds from Database", selectErr);
         return next(new ErrorHandler("Internal Server Error", 500));
@@ -164,179 +164,193 @@ export const approveMasjeed = CatchAsyncError(async (req, res, next) => {
           console.log(name, email, phonenumber);
 
           const addadminQuery = `INSERT INTO admin(name,email,password,status,phonenumber) VALUES(?,?,?,?,?)`;
+          const password = 123456;
 
-          connection.query(
-            addadminQuery,
-            [name, email, 123456, 1, phonenumber],
-            (error, succesresults) => {
-              if (error) {
-                console.log(error);
-                return next(new ErrorHandler("Internal Server Error", 500));
-              }
-
-              const transporter = nodemailerConfig();
-              const mailOptions = {
-                from: process.env.SMTP_MAIL,
-                to: email,
-                subject: "Welcome to Mymasjeed. Aprroved Your Request",
-                html: `
-                  <p>Dear ${name},</p>
-                  <p>Thank you for registering with My Masjeed. We are delighted to have you as part of our community, and we want to extend a warm welcome to you.</p>
-                  <p>This is your email ${email} and password is 123456</p>
-                `,
-              };
-
-              transporter.sendMail(mailOptions, (emailError, info) => {
-                if (emailError) {
-                  console.log(emailError);
-                  return next(new ErrorHandler("Email could not be sent", 500));
+          bcrypt.hash(password, 10, (err, hashedPassword) => {
+            if (err) {
+              return next(new ErrorHandler(err.message, 500));
+            }
+            connection.query(
+              addadminQuery,
+              [name, email, hashedPassword, 1, phonenumber],
+              (error, succesresults) => {
+                if (error) {
+                  console.log(error);
+                  return next(new ErrorHandler("Internal Server Error", 500));
                 }
-              });
 
-              // Retrieve prayer details file path
-              const selectQuery =
-                "SELECT prayerdetails FROM masjeed WHERE id = ?";
+                const transporter = nodemailerConfig();
+                const mailOptions = {
+                  from: process.env.SMTP_MAIL,
+                  to: email,
+                  subject: "Welcome to Mymasjeed. Aprroved Your Request",
+                  html: `
+                    <p>Dear ${name},</p>
+                    <p>Thank you for registering with My Masjeed. We are delighted to have you as part of our community, and we want to extend a warm welcome to you.</p>
+                    <p>This is your email ${email} and password is 123456</p>
+                  `,
+                };
 
-              connection.query(
-                selectQuery,
-                [masjeedId],
-                (selectError, results) => {
-                  if (selectError) {
-                    console.error(
-                      "Error fetching prayerdetails from the database:",
-                      selectError
+                transporter.sendMail(mailOptions, (emailError, info) => {
+                  if (emailError) {
+                    console.log(emailError);
+                    return next(
+                      new ErrorHandler("Email could not be sent", 500)
                     );
-                    return next(new ErrorHandler("Internal Server Error", 500));
                   }
+                });
 
-                  if (results.length === 0) {
-                    return next(new ErrorHandler("File not found", 404));
-                  }
+                // Retrieve prayer details file path
+                const selectQuery =
+                  "SELECT prayerdetails FROM masjeed WHERE id = ?";
 
-                  const filename = results[0].prayerdetails;
-
-                  // Read the Excel file
-                  const filePath = path.join(__dirname, "../uploads", filename);
-                  const workbook = xlsx.readFile(filePath);
-                  const sheetName = workbook.SheetNames[0];
-                  const sheet = workbook.Sheets[sheetName];
-
-                  const secondsheetName = workbook.SheetNames[1];
-                  const secondsheet = workbook.Sheets[secondsheetName];
-
-                  // Parse Excel data
-                  const prayertimingsData = xlsx.utils.sheet_to_json(sheet, {
-                    raw: false,
-                    range: 11,
-                  });
-
-                  // Parse Excel data
-                  const iqamahData = xlsx.utils.sheet_to_json(secondsheet, {
-                    raw: false,
-                    range: 1,
-                  });
-
-                  const convertedData = iqamahData.map((data) => {
-                    const convertedValues = {};
-                    for (const key in data) {
-                      const value = data[key];
-
-                      // Exclude "Jumah Adhan" from conversion
-                      if (key === "Jumah Adhan") {
-                        convertedValues[key] = value;
-                      } else {
-                        const value = data[key];
-                        const intValue = parseInt(value, 10);
-                        convertedValues[key] = isNaN(intValue)
-                          ? value
-                          : intValue;
-                      }
+                connection.query(
+                  selectQuery,
+                  [masjeedId],
+                  (selectError, results) => {
+                    if (selectError) {
+                      console.error(
+                        "Error fetching prayerdetails from the database:",
+                        selectError
+                      );
+                      return next(
+                        new ErrorHandler("Internal Server Error", 500)
+                      );
                     }
-                    return convertedValues;
-                  });
 
-                  const commonData = convertedData[0];
+                    if (results.length === 0) {
+                      return next(new ErrorHandler("File not found", 404));
+                    }
 
-                  // Merge common data
-                  const mergedData = prayertimingsData.map((item) => {
-                    // Merge the common data into each item using object spreading
-                    return { ...item, ...commonData };
-                  });
+                    const filename = results[0].prayerdetails;
 
-                  // Insert data into prayertimingstable
-                  mergedData.forEach((row) => {
-                    const {
-                      Month,
-                      Day,
-                      "Fajr Adhan": FajrAdhan,
-                      Shouruq,
-                      "Dhuhr Adhan": DhuhrAdhan,
-                      "Asr Adhan": AsrAdhan,
-                      "Maghrib Adhan": MaghribAdhan,
-                      "Isha Adhan": IshaAdhan,
-                      "Fajr Iqamah": FajrIqamah,
-                      "Dhuhr Iqamah": DhuhrIqamah,
-                      "Asr Iqamah": AsrIqamah,
-                      "Maghrib Iqamah": MaghribIqamah,
-                      "Isha Iqamah": IshaIqamah,
-                      "Jumah Adhan": JumahAdhan,
-                      "Jumah Khutba duration": JumahKhutbaDuration,
-                    } = row;
+                    // Read the Excel file
+                    const filePath = path.join(
+                      __dirname,
+                      "../uploads",
+                      filename
+                    );
+                    const workbook = xlsx.readFile(filePath);
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
 
-                    const insertQuery = `
-              INSERT INTO prayertimingstable (masjeedid, day, month, fajr, shouruq, dhuhr, asr, maghrib, isha,fajriqamah,
-                dhuhriqamah,
-                asriqamah,
-                maghribiqamah,
-               ishaiqamah,
-                jumahadhan,
-                Jumahkhutbaduration)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?)
-            `;
+                    const secondsheetName = workbook.SheetNames[1];
+                    const secondsheet = workbook.Sheets[secondsheetName];
 
-                    connection.query(
-                      insertQuery,
-                      [
-                        masjeedId,
-                        Day,
-                        Month,
-                        FajrAdhan,
-                        Shouruq,
-                        DhuhrAdhan,
-                        AsrAdhan,
-                        MaghribAdhan,
-                        IshaAdhan,
+                    // Parse Excel data
+                    const prayertimingsData = xlsx.utils.sheet_to_json(sheet, {
+                      raw: false,
+                      range: 11,
+                    });
 
-                        FajrIqamah,
-                        DhuhrIqamah,
-                        AsrIqamah,
-                        MaghribIqamah,
-                        IshaIqamah,
-                        JumahAdhan,
-                        JumahKhutbaDuration,
-                      ],
-                      (insertError) => {
-                        if (insertError) {
-                          console.error(
-                            "Error inserting data into prayertimingstable:",
-                            insertError
-                          );
-                          return next(
-                            new ErrorHandler("Internal Server Error", 500)
-                          );
+                    // Parse Excel data
+                    const iqamahData = xlsx.utils.sheet_to_json(secondsheet, {
+                      raw: false,
+                      range: 1,
+                    });
+
+                    const convertedData = iqamahData.map((data) => {
+                      const convertedValues = {};
+                      for (const key in data) {
+                        const value = data[key];
+
+                        // Exclude "Jumah Adhan" from conversion
+                        if (key === "Jumah Adhan") {
+                          convertedValues[key] = value;
+                        } else {
+                          const value = data[key];
+                          const intValue = parseInt(value, 10);
+                          convertedValues[key] = isNaN(intValue)
+                            ? value
+                            : intValue;
                         }
                       }
-                    );
-                  });
+                      return convertedValues;
+                    });
 
-                  res.json({
-                    success: true,
-                    message: "Accepted Successfully",
-                  });
-                }
-              );
-            }
-          );
+                    const commonData = convertedData[0];
+
+                    // Merge common data
+                    const mergedData = prayertimingsData.map((item) => {
+                      // Merge the common data into each item using object spreading
+                      return { ...item, ...commonData };
+                    });
+
+                    // Insert data into prayertimingstable
+                    mergedData.forEach((row) => {
+                      const {
+                        Month,
+                        Day,
+                        "Fajr Adhan": FajrAdhan,
+                        Shouruq,
+                        "Dhuhr Adhan": DhuhrAdhan,
+                        "Asr Adhan": AsrAdhan,
+                        "Maghrib Adhan": MaghribAdhan,
+                        "Isha Adhan": IshaAdhan,
+                        "Fajr Iqamah": FajrIqamah,
+                        "Dhuhr Iqamah": DhuhrIqamah,
+                        "Asr Iqamah": AsrIqamah,
+                        "Maghrib Iqamah": MaghribIqamah,
+                        "Isha Iqamah": IshaIqamah,
+                        "Jumah Adhan": JumahAdhan,
+                        "Jumah Khutba duration": JumahKhutbaDuration,
+                      } = row;
+
+                      const insertQuery = `
+                INSERT INTO prayertimingstable (masjeedid, day, month, fajr, shouruq, dhuhr, asr, maghrib, isha,fajriqamah,
+                  dhuhriqamah,
+                  asriqamah,
+                  maghribiqamah,
+                 ishaiqamah,
+                  jumahadhan,
+                  Jumahkhutbaduration)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?)
+              `;
+
+                      connection.query(
+                        insertQuery,
+                        [
+                          masjeedId,
+                          Day,
+                          Month,
+                          FajrAdhan,
+                          Shouruq,
+                          DhuhrAdhan,
+                          AsrAdhan,
+                          MaghribAdhan,
+                          IshaAdhan,
+
+                          FajrIqamah,
+                          DhuhrIqamah,
+                          AsrIqamah,
+                          MaghribIqamah,
+                          IshaIqamah,
+                          JumahAdhan,
+                          JumahKhutbaDuration,
+                        ],
+                        (insertError) => {
+                          if (insertError) {
+                            console.error(
+                              "Error inserting data into prayertimingstable:",
+                              insertError
+                            );
+                            return next(
+                              new ErrorHandler("Internal Server Error", 500)
+                            );
+                          }
+                        }
+                      );
+                    });
+
+                    res.json({
+                      success: true,
+                      message: "Accepted Successfully",
+                    });
+                  }
+                );
+              }
+            );
+          });
         }
       );
     });
