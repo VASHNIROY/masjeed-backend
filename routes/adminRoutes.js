@@ -3,6 +3,7 @@ import multer from "multer";
 import path from "path";
 import {
   addAdminStaff,
+  addTimingRowToHr,
   adminLogin,
   editAdminStaffMember,
   editIqamah,
@@ -10,8 +11,10 @@ import {
   getIqamahDetails,
   getMasjeedDetails,
   getMasjeedTimings,
+  substractTimingRowToHr,
   updateMasjeedDetails,
   updateTimingRow,
+  updateTimingRowToHr,
   verifyEmailOTPSend,
 } from "../controllers/adminController.js";
 import { isAuthenticatedAdmin } from "../middleware/auth.js";
@@ -34,7 +37,11 @@ const upload = multer({ storage: storage });
 
 adminRouter.post("/adminlogin", adminLogin);
 
-adminRouter.get("/getmasjeedtimings/:id",isAuthenticatedAdmin, getMasjeedTimings);
+adminRouter.get(
+  "/getmasjeedtimings/:id",
+  isAuthenticatedAdmin,
+  getMasjeedTimings
+);
 
 adminRouter.post("/forgetpassword", forgotPassword);
 
@@ -43,17 +50,36 @@ adminRouter.post("/adminotpverfiysend", verifyEmailOTPSend);
 adminRouter.put("/updateTimingRow", isAuthenticatedAdmin, updateTimingRow);
 
 adminRouter.put(
+  "/updatetimingrowtohr",
+  isAuthenticatedAdmin,
+  updateTimingRowToHr
+);
+
+adminRouter.put(
   "/updatemasjeeddetails",
   upload.single("file"),
   isAuthenticatedAdmin,
   updateMasjeedDetails
 );
 
-adminRouter.get("/getmasjeeddetails/:id",isAuthenticatedAdmin, getMasjeedDetails);
+adminRouter.put("/addhrtorow", isAuthenticatedAdmin, addTimingRowToHr);
 
-adminRouter.post("/addadminstaff",isAuthenticatedAdmin, addAdminStaff);
+adminRouter.put("/substracthrtorow", isAuthenticatedAdmin, substractTimingRowToHr);
 
-adminRouter.put("/editadminstaffmember/:id", isAuthenticatedAdmin, editAdminStaffMember);
+
+adminRouter.get(
+  "/getmasjeeddetails/:id",
+  isAuthenticatedAdmin,
+  getMasjeedDetails
+);
+
+adminRouter.post("/addadminstaff", isAuthenticatedAdmin, addAdminStaff);
+
+adminRouter.put(
+  "/editadminstaffmember/:id",
+  isAuthenticatedAdmin,
+  editAdminStaffMember
+);
 
 adminRouter.put("/editIqamah/:id", isAuthenticatedAdmin, editIqamah);
 
