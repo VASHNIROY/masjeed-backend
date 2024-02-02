@@ -14,7 +14,6 @@ import {
   substractTimingRowToHr,
   updateMasjeedDetails,
   updateTimingRow,
-  updateTimingRowToHr,
   verifyEmailOTPSend,
 } from "../controllers/adminController.js";
 import { isAuthenticatedAdmin } from "../middleware/auth.js";
@@ -49,11 +48,6 @@ adminRouter.post("/adminotpverfiysend", verifyEmailOTPSend);
 
 adminRouter.put("/updateTimingRow", isAuthenticatedAdmin, updateTimingRow);
 
-adminRouter.put(
-  "/updatetimingrowtohr",
-  isAuthenticatedAdmin,
-  updateTimingRowToHr
-);
 
 adminRouter.put(
   "/updatemasjeeddetails",
@@ -62,16 +56,15 @@ adminRouter.put(
   updateMasjeedDetails
 );
 
-adminRouter.put("/addhrtorow", isAuthenticatedAdmin, addTimingRowToHr);
+adminRouter.put("/addhrtorow/:id", isAuthenticatedAdmin, addTimingRowToHr);
 
-adminRouter.put("/substracthrtorow", isAuthenticatedAdmin, substractTimingRowToHr);
-
-
-adminRouter.get(
-  "/getmasjeeddetails/:id",
+adminRouter.put(
+  "/substracthrtorow/:id",
   isAuthenticatedAdmin,
-  getMasjeedDetails
+  substractTimingRowToHr
 );
+
+adminRouter.get("/getmasjeeddetails", isAuthenticatedAdmin, getMasjeedDetails);
 
 adminRouter.post("/addadminstaff", isAuthenticatedAdmin, addAdminStaff);
 
