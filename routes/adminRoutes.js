@@ -14,6 +14,7 @@ import {
   updateTimingRow,
   verifyEmailOTPSend,
 } from "../controllers/adminController.js";
+import { isAuthenticatedAdmin } from "../middleware/auth.js";
 
 export const adminRouter = express.Router();
 
@@ -33,26 +34,27 @@ const upload = multer({ storage: storage });
 
 adminRouter.post("/adminlogin", adminLogin);
 
-adminRouter.get("/getmasjeedtimings/:id", getMasjeedTimings);
+adminRouter.get("/getmasjeedtimings/:id",isAuthenticatedAdmin, getMasjeedTimings);
 
 adminRouter.post("/forgetpassword", forgotPassword);
 
 adminRouter.post("/adminotpverfiysend", verifyEmailOTPSend);
 
-adminRouter.put("/updateTimingRow", updateTimingRow);
+adminRouter.put("/updateTimingRow", isAuthenticatedAdmin, updateTimingRow);
 
 adminRouter.put(
   "/updatemasjeeddetails",
   upload.single("file"),
+  isAuthenticatedAdmin,
   updateMasjeedDetails
 );
 
-adminRouter.get("/getmasjeeddetails/:id", getMasjeedDetails);
+adminRouter.get("/getmasjeeddetails/:id",isAuthenticatedAdmin, getMasjeedDetails);
 
-adminRouter.post("/addadminstaff", addAdminStaff);
+adminRouter.post("/addadminstaff",isAuthenticatedAdmin, addAdminStaff);
 
-adminRouter.put("/editadminstaffmember/:id", editAdminStaffMember);
+adminRouter.put("/editadminstaffmember/:id", isAuthenticatedAdmin, editAdminStaffMember);
 
-adminRouter.put("/editIqamah/:id", editIqamah);
+adminRouter.put("/editIqamah/:id", isAuthenticatedAdmin, editIqamah);
 
-adminRouter.get("/getiqamahtimigs/:id", getIqamahDetails);
+adminRouter.get("/getiqamahtimigs/:id", isAuthenticatedAdmin, getIqamahDetails);

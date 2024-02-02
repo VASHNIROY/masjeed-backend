@@ -224,7 +224,7 @@ export const updateTimingRow = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
-
+  
 export const getMasjeedDetails = CatchAsyncError(async (req, res, next) => {
   try {
     const masjeedid = req.params.id;
