@@ -3,6 +3,7 @@ import multer from "multer";
 import path from "path";
 import {
   addAdminStaff,
+  addTimingRowToHr,
   adminLogin,
   editAdminStaffMember,
   editIqamah,
@@ -10,10 +11,12 @@ import {
   getIqamahDetails,
   getMasjeedDetails,
   getMasjeedTimings,
+  substractTimingRowToHr,
   updateMasjeedDetails,
   updateTimingRow,
   verifyEmailOTPSend,
 } from "../controllers/adminController.js";
+import { isAuthenticatedAdmin } from "../middleware/auth.js";
 
 export const adminRouter = express.Router();
 
@@ -33,26 +36,44 @@ const upload = multer({ storage: storage });
 
 adminRouter.post("/adminlogin", adminLogin);
 
-adminRouter.get("/getmasjeedtimings/:id", getMasjeedTimings);
+adminRouter.get(
+  "/getmasjeedtimings/:id",
+  isAuthenticatedAdmin,
+  getMasjeedTimings
+);
 
 adminRouter.post("/forgetpassword", forgotPassword);
 
 adminRouter.post("/adminotpverfiysend", verifyEmailOTPSend);
 
-adminRouter.put("/updateTimingRow", updateTimingRow);
+adminRouter.put("/updateTimingRow", isAuthenticatedAdmin, updateTimingRow);
+
 
 adminRouter.put(
   "/updatemasjeeddetails",
   upload.single("file"),
+  isAuthenticatedAdmin,
   updateMasjeedDetails
 );
 
-adminRouter.get("/getmasjeeddetails/:id", getMasjeedDetails);
+adminRouter.put("/addhrtorow/:id", isAuthenticatedAdmin, addTimingRowToHr);
 
-adminRouter.post("/addadminstaff", addAdminStaff);
+adminRouter.put(
+  "/substracthrtorow/:id",
+  isAuthenticatedAdmin,
+  substractTimingRowToHr
+);
 
-adminRouter.put("/editadminstaffmember/:id", editAdminStaffMember);
+adminRouter.get("/getmasjeeddetails", isAuthenticatedAdmin, getMasjeedDetails);
 
-adminRouter.put("/editIqamah/:id", editIqamah);
+adminRouter.post("/addadminstaff", isAuthenticatedAdmin, addAdminStaff);
 
-adminRouter.get("/getiqamahtimigs/:id", getIqamahDetails);
+adminRouter.put(
+  "/editadminstaffmember/:id",
+  isAuthenticatedAdmin,
+  editAdminStaffMember
+);
+
+adminRouter.put("/editIqamah/:id", isAuthenticatedAdmin, editIqamah);
+
+adminRouter.get("/getiqamahtimigs/:id", isAuthenticatedAdmin, getIqamahDetails);
