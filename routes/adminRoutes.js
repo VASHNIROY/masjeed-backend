@@ -69,6 +69,6 @@ adminRouter.put(
   editAdminStaffMember
 );
 
-adminRouter.put("/editIqamah/:id", isAuthenticatedAdmin, editIqamah);
+adminRouter.put("/editIqamah", isAuthenticatedAdmin, editIqamah);
 
-adminRouter.get("/getiqamahtimigs/:id", isAuthenticatedAdmin, getIqamahDetails);
+adminRouter.get("/getiqamahtimigs", isAuthenticatedAdmin, getIqamahDetails);

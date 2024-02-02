@@ -360,7 +360,6 @@ export const addTimingRowToHr = CatchAsyncError(async (req, res, next) => {
           );
         }
       );
-
     });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
@@ -472,7 +471,6 @@ export const substractTimingRowToHr = CatchAsyncError(
             );
           }
         );
-
       });
     } catch (error) {
       return next(new ErrorHandler(error.message, 400));
@@ -717,21 +715,35 @@ export const editAdminStaffMember = CatchAsyncError(async (req, res, next) => {
 
 export const getIqamahDetails = CatchAsyncError(async (req, res, next) => {
   try {
-    const masjeedid = req.params.id;
-    const getIqamahDetailsQuery = `SELECT  fajriqamah,
-    dhuhriqamah,
-    asriqamah,
-    maghribiqamah,
-    ishaiqamah,
-    jumahadhan,
-    jumahkhutbaduration FROM prayertimingstable WHERE masjeedid = ?`;
+    const useremail = req.user.email;
 
-    connection.query(getIqamahDetailsQuery, [masjeedid], (error, results) => {
+    const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
+
+    connection.query(getmasjeedidQuery, [useremail], (error, results) => {
       if (error) {
         return next(new ErrorHandler(error.message, 500));
       }
 
-      res.json({ success: true, data: results[0] });
+      if (results.length === 0) {
+        return next(new ErrorHandler("Masjeed Not Found", 404));
+      }
+
+      const masjeedid = results[0].id;
+      const getIqamahDetailsQuery = `SELECT  fajriqamah,
+      dhuhriqamah,
+      asriqamah,
+      maghribiqamah,
+      ishaiqamah,
+      jumahadhan,
+      jumahkhutbaduration FROM prayertimingstable WHERE masjeedid = ?`;
+
+      connection.query(getIqamahDetailsQuery, [masjeedid], (error, results) => {
+        if (error) {
+          return next(new ErrorHandler(error.message, 500));
+        }
+
+        res.json({ success: true, data: results[0] });
+      });
     });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
@@ -739,23 +751,21 @@ export const getIqamahDetails = CatchAsyncError(async (req, res, next) => {
 });
 
 export const editIqamah = CatchAsyncError(async (req, res, next) => {
+  const useremail = req.user.email;
   try {
-    const masjeedid = req.params.id;
-    const {
-      fajriqamah,
-      dhuhriqamah,
-      asriqamah,
-      maghribiqamah,
-      ishaiqamah,
-      jumahadhan,
-      jumahiqamah,
-    } = req.body;
+    const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1;`;
 
-    const updateiqamahQuery = `UPDATE prayertimingstable SET fajriqamah = ?, dhuhriqamah = ?, asriqamah = ?, maghribiqamah = ?, ishaiqamah = ?, jumahadhan = ?, jumahkhutbaduration = ? WHERE masjeedid = ?`;
+    connection.query(getmasjeedidQuery, [useremail], (error, results) => {
+      if (error) {
+        return next(new ErrorHandler(error.message, 500));
+      }
 
-    connection.query(
-      updateiqamahQuery,
-      [
+      if (results.length === 0) {
+        return next(new ErrorHandler("Masjeed Not Found", 404));
+      }
+
+      const masjeedid = results[0].id;
+      const {
         fajriqamah,
         dhuhriqamah,
         asriqamah,
@@ -763,16 +773,31 @@ export const editIqamah = CatchAsyncError(async (req, res, next) => {
         ishaiqamah,
         jumahadhan,
         jumahiqamah,
-        masjeedid,
-      ],
-      (error, results) => {
-        if (error) {
-          return next(new ErrorHandler(error.message, 500));
-        }
+      } = req.body;
 
-        res.json({ success: true, message: "Iqamah Updated" });
-      }
-    );
+      const updateiqamahQuery = `UPDATE prayertimingstable SET fajriqamah = ?, dhuhriqamah = ?, asriqamah = ?, maghribiqamah = ?, ishaiqamah = ?, jumahadhan = ?, jumahkhutbaduration = ? WHERE masjeedid = ?`;
+
+      connection.query(
+        updateiqamahQuery,
+        [
+          fajriqamah,
+          dhuhriqamah,
+          asriqamah,
+          maghribiqamah,
+          ishaiqamah,
+          jumahadhan,
+          jumahiqamah,
+          masjeedid,
+        ],
+        (error, results) => {
+          if (error) {
+            return next(new ErrorHandler(error.message, 500));
+          }
+
+          res.json({ success: true, message: "Iqamah Updated" });
+        }
+      );
+    });
   } catch (error) {
     return next(new ErrorHandler("Internal Server Error", 500));
   }
