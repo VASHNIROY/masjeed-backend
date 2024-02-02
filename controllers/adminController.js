@@ -445,13 +445,12 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
   try {
     const filename = req.file ? req.file.filename : null;
 
-    if (!filename) {
-      return res.status(400).json({ error: "No file uploaded" });
+    let masjeedUpdateQuery = `UPDATE masjeed SET adminname = ?, masjeedname = ?, address =?, postalcode = ?, city = ?, state = ?, country = ?, phonenumber = ?`;
+    if (filename) {
+      masjeedUpdateQuery += ', prayerdetails = ?';
     }
 
-    const masjeedUpdateQuery = `UPDATE masjeed SET adminname = ?, masjeedname = ?, address =?, postalcode = ?, city = ?, state = ?, country = ?, phonenumber = ?, ${
-      filename ? `prayerdetails = ${filename}` : ""
-    } WHERE email = ?`;
+    masjeedUpdateQuery += ' WHERE email = ?';
 
     const {
       adminname,
@@ -459,48 +458,51 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
       address,
       postalcode,
       city,
-      email,
       state,
       country,
       phonenumber,
+      email,
     } = req.body;
 
-    connection.query(
-      masjeedUpdateQuery,
-      [
-        adminname,
-        masjeedname,
-        address,
-        postalcode,
-        city,
-        state,
-        country,
-        phonenumber,
-        email,
-      ],
-      (updateErr, results) => {
-        if (updateErr) {
-          console.log("Error while updating masjeed in Database", updateErr);
+    const uploadValues = [
+      adminname,
+      masjeedname,
+      address,
+      postalcode,
+      city,
+      state,
+      country,
+      phonenumber,
+    ];
+
+    if (filename) {
+      uploadValues.push(filename);
+    }
+
+    uploadValues.push(email);
+
+    connection.query(masjeedUpdateQuery, uploadValues, (updateErr, results) => {
+      if (updateErr) {
+        console.log("Error while updating masjeed in Database", updateErr);
+        return next(new ErrorHandler("Internal Server Error", 500));
+      }
+
+      if (results.affectedRows === 0) {
+        return next(new ErrorHandler("Masjeed Not Found", 404));
+      }
+      const updateadminnameQuery = `UPDATE admin SET name = ? WHERE email = ?`;
+
+      connection.query(updateadminnameQuery, [adminname,email], (error, results) => {
+        if (error) {
           return next(new ErrorHandler("Internal Server Error", 500));
         }
 
-        if (results.affectedRows === 0) {
-          return next(new ErrorHandler("Masjeed Not Found", 404));
-        }
-        const updateadminnameQuery = `UPDATE admin SET name = ? WHERE email = ?`;
-
-        connection.query(updateadminnameQuery, [email], (error, results) => {
-          if (error) {
-            return next(new ErrorHandler("Internal Server Error", 500));
-          }
-
-          res.json({
-            success: true,
-            message: "masjeed updated successfully",
-          });
+        res.json({
+          success: true,
+          message: "masjeed updated successfully",
         });
-      }
-    );
+      });
+    });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
