@@ -42,7 +42,7 @@ adminRouter.post("/forgetpassword", forgotPassword);
 
 adminRouter.post("/adminotpverfiysend", verifyEmailOTPSend);
 
-adminRouter.put("/updateTimingRow", isAuthenticatedAdmin, updateTimingRow);
+adminRouter.put("/updateTimingRow/:id", isAuthenticatedAdmin, updateTimingRow);
 
 adminRouter.put(
   "/updatemasjeeddetails",
@@ -64,7 +64,7 @@ adminRouter.get("/getmasjeeddetails", isAuthenticatedAdmin, getMasjeedDetails);
 adminRouter.post("/addadminstaff", isAuthenticatedAdmin, addAdminStaff);
 
 adminRouter.put(
-  "/editadminstaffmember/:id",
+  "/editadminstaffmember",
   isAuthenticatedAdmin,
   editAdminStaffMember
 );
