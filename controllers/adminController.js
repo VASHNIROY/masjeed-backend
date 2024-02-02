@@ -142,19 +142,40 @@ export const verifyEmailOTPSend = CatchAsyncError(async (req, res, next) => {
 });
 
 export const getMasjeedTimings = CatchAsyncError(async (req, res, next) => {
-  const masjeedid = req.params.id;
+  const email = req.user.email;
   try {
-    const MasjeedTimingsQuery = `SELECT * FROM prayertimingstable WHERE masjeedid = ?`;
-    connection.query(MasjeedTimingsQuery, [masjeedid], (selectErr, results) => {
-      if (selectErr) {
-        console.log("Error fetching timings from Database", selectErr);
+    const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
+    connection.query(getmasjeedidQuery, [email], (error, results) => {
+      if (error) {
+        console.log("Error fetching masjeed from Database", error);
         return next(new ErrorHandler("Internal Server Error", 500));
       }
+
       if (results.length === 0) {
-        return next(new ErrorHandler("Timings Not Found", 404));
-        x``;
+        return next(new ErrorHandler("Masjeed Not Found", 404));
       }
-      res.json({ success: true, message: "Fetched Timings", data: results });
+
+      const masjeedid = results[0].id;
+
+      const MasjeedTimingsQuery = `SELECT * FROM prayertimingstable WHERE masjeedid = ?`;
+      connection.query(
+        MasjeedTimingsQuery,
+        [masjeedid],
+        (selectErr, results) => {
+          if (selectErr) {
+            console.log("Error fetching timings from Database", selectErr);
+            return next(new ErrorHandler("Internal Server Error", 500));
+          }
+          if (results.length === 0) {
+            return next(new ErrorHandler("Timings Not Found", 404));
+          }
+          res.json({
+            success: true,
+            message: "Fetched Timings",
+            data: results,
+          });
+        }
+      );
     });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
@@ -228,114 +249,30 @@ export const updateTimingRow = CatchAsyncError(async (req, res, next) => {
 
 export const addTimingRowToHr = CatchAsyncError(async (req, res, next) => {
   try {
-    const { masjeedid, day, month } = req.body;
-
+    const email = req.user.email;
+    const { day, month } = req.body;
     const timingData = req.body;
 
-    const addOneHourToTiming = (timing) => {
-      const [hours, minutes] = timing.split(":");
-      const originalTime = new Date();
-      originalTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0);
-
-      // Adding one hour
-      const updatedTime = new Date(originalTime.getTime() + 60 * 60 * 1000);
-
-      // Formatting the updated time
-      const updatedHours = updatedTime.getHours().toString().padStart(2, "0");
-      const updatedMinutes = updatedTime
-        .getMinutes()
-        .toString()
-        .padStart(2, "0");
-
-      return `${updatedHours}:${updatedMinutes}`;
-    };
-
-    // Map through each timing in the timingData object and add one hour
-    for (const key in timingData) {
-      if (
-        key !== "id" &&
-        key !== "masjeedid" &&
-        key !== "day" &&
-        key !== "month"
-      ) {
-        timingData[key] = addOneHourToTiming(timingData[key]);
+    const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
+    connection.query(getmasjeedidQuery, [email], (error, results) => {
+      if (error) {
+        console.log("Error fetching masjeed from Database", error);
+        return next(new ErrorHandler("Internal Server Error", 500));
       }
-    }
 
-    const updateHrQuery = `UPDATE prayertimingstable SET  fajr = ?,shouruq = ?,
-dhuhr = ?, asr = ?, maghrib = ?,isha = ? WHERE masjeedid = ? AND day = ? AND monthe = ?`;
-
-    connection.query(
-      updateHrQuery,
-      [
-        timingData.fajr,
-        timingData.shouruq,
-        timingData.dhuhr,
-        timingData.asr,
-        timingData.maghrib,
-        timingData.isha,
-        masjeedid,
-        day,
-        month,
-      ],
-      (updateErr, updateResults) => {
-        if (updateErr) {
-          return next(new ErrorHandler("Internal Server Error", 500));
-        }
-
-        if (updateResults.affectedRows === 0) {
-          return next(new ErrorHandler("Timings Not Found", 404));
-        }
-
-        const getupdaterowQuery = `SELECT * FROM prayertimingstable WHERE masjeedid = ? AND day = ? AND month = ?`;
-
-        connection.query(
-          getupdaterowQuery,
-          [masjeedid, day, month],
-          (selectErr, selectResults) => {
-            if (selectErr) {
-              return next(new ErrorHandler("Internal Server Error", 500));
-            }
-
-            if (selectResults.length === 0) {
-              return next(new ErrorHandler("Updated Timings Not Found", 404));
-            }
-
-            const updatedRow = selectResults[0];
-
-            res.json({
-              success: true,
-              message: "Updated Timings",
-              data: updatedRow,
-            });
-          }
-        );
-
-        res.json({ success: true, message: "Updated Timings" });
+      if (results.length === 0) {
+        return next(new ErrorHandler("Masjeed Not Found", 404));
       }
-    );
 
-    res.json(timingData);
-    console.log(timingData);
-  } catch (error) {
-    return next(new ErrorHandler(error.message, 400));
-  }
-});
+      const masjeedid = results[0].id;
 
-export const substractTimingRowToHr = CatchAsyncError(
-  async (req, res, next) => {
-    try {
-      const { masjeedid, day, month } = req.body;
-
-      const timingData = req.body;
-
-      const subtractOneHourFromTiming = (timing) => {
+      const addOneHourToTiming = (timing) => {
         const [hours, minutes] = timing.split(":");
         const originalTime = new Date();
         originalTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0);
 
-        // Subtracting one hour
-        const updatedTime = new Date(originalTime.getTime() - 60 * 60 * 1000);
+        // Adding one hour
+        const updatedTime = new Date(originalTime.getTime() + 60 * 60 * 1000);
 
         // Formatting the updated time
         const updatedHours = updatedTime.getHours().toString().padStart(2, "0");
@@ -347,7 +284,7 @@ export const substractTimingRowToHr = CatchAsyncError(
         return `${updatedHours}:${updatedMinutes}`;
       };
 
-      // Map through each timing in the timingData object and subtract one hour
+      // Map through each timing in the timingData object and add one hour
       for (const key in timingData) {
         if (
           key !== "id" &&
@@ -355,12 +292,12 @@ export const substractTimingRowToHr = CatchAsyncError(
           key !== "day" &&
           key !== "month"
         ) {
-          timingData[key] = subtractOneHourFromTiming(timingData[key]);
+          timingData[key] = addOneHourToTiming(timingData[key]);
         }
       }
 
       const updateHrQuery = `UPDATE prayertimingstable SET  fajr = ?,shouruq = ?,
-dhuhr = ?, asr = ?, maghrib = ?,isha = ? WHERE masjeedid = ? AND day = ? AND monthe = ?`;
+  dhuhr = ?, asr = ?, maghrib = ?,isha = ? WHERE masjeedid = ? AND day = ? AND month = ?`;
 
       connection.query(
         updateHrQuery,
@@ -414,6 +351,121 @@ dhuhr = ?, asr = ?, maghrib = ?,isha = ? WHERE masjeedid = ? AND day = ? AND mon
 
       res.json(timingData);
       console.log(timingData);
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+});
+
+export const substractTimingRowToHr = CatchAsyncError(
+  async (req, res, next) => {
+    try {
+      const email = req.user.email;
+      const { day, month } = req.body;
+      const timingData = req.body;
+
+      const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
+
+      connection.query(getmasjeedidQuery, [email], (error, results) => {
+        if (error) {
+          console.log("Error fetching masjeed from Database", error);
+          return next(new ErrorHandler("Internal Server Error", 500));
+        }
+
+        if (results.length === 0) {
+          return next(new ErrorHandler("Masjeed Not Found", 404));
+        }
+
+        const masjeedid = results[0].id;
+        const subtractOneHourFromTiming = (timing) => {
+          const [hours, minutes] = timing.split(":");
+          const originalTime = new Date();
+          originalTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0);
+
+          // Subtracting one hour
+          const updatedTime = new Date(originalTime.getTime() - 60 * 60 * 1000);
+
+          // Formatting the updated time
+          const updatedHours = updatedTime
+            .getHours()
+            .toString()
+            .padStart(2, "0");
+          const updatedMinutes = updatedTime
+            .getMinutes()
+            .toString()
+            .padStart(2, "0");
+
+          return `${updatedHours}:${updatedMinutes}`;
+        };
+
+        // Map through each timing in the timingData object and subtract one hour
+        for (const key in timingData) {
+          if (
+            key !== "id" &&
+            key !== "masjeedid" &&
+            key !== "day" &&
+            key !== "month"
+          ) {
+            timingData[key] = subtractOneHourFromTiming(timingData[key]);
+          }
+        }
+
+        const updateHrQuery = `UPDATE prayertimingstable SET  fajr = ?,shouruq = ?,
+    dhuhr = ?, asr = ?, maghrib = ?,isha = ? WHERE masjeedid = ? AND day = ? AND monthe = ?`;
+
+        connection.query(
+          updateHrQuery,
+          [
+            timingData.fajr,
+            timingData.shouruq,
+            timingData.dhuhr,
+            timingData.asr,
+            timingData.maghrib,
+            timingData.isha,
+            masjeedid,
+            day,
+            month,
+          ],
+          (updateErr, updateResults) => {
+            if (updateErr) {
+              return next(new ErrorHandler("Internal Server Error", 500));
+            }
+
+            if (updateResults.affectedRows === 0) {
+              return next(new ErrorHandler("Timings Not Found", 404));
+            }
+
+            const getupdaterowQuery = `SELECT * FROM prayertimingstable WHERE masjeedid = ? AND day = ? AND month = ?`;
+
+            connection.query(
+              getupdaterowQuery,
+              [masjeedid, day, month],
+              (selectErr, selectResults) => {
+                if (selectErr) {
+                  return next(new ErrorHandler("Internal Server Error", 500));
+                }
+
+                if (selectResults.length === 0) {
+                  return next(
+                    new ErrorHandler("Updated Timings Not Found", 404)
+                  );
+                }
+
+                const updatedRow = selectResults[0];
+
+                res.json({
+                  success: true,
+                  message: "Updated Timings",
+                  data: updatedRow,
+                });
+              }
+            );
+          }
+        );
+
+        res.json(timingData);
+        console.log(timingData);
+      });
     } catch (error) {
       return next(new ErrorHandler(error.message, 400));
     }
@@ -447,10 +499,10 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
 
     let masjeedUpdateQuery = `UPDATE masjeed SET adminname = ?, masjeedname = ?, address =?, postalcode = ?, city = ?, state = ?, country = ?, phonenumber = ?`;
     if (filename) {
-      masjeedUpdateQuery += ', prayerdetails = ?';
+      masjeedUpdateQuery += ", prayerdetails = ?";
     }
 
-    masjeedUpdateQuery += ' WHERE email = ?';
+    masjeedUpdateQuery += " WHERE email = ?";
 
     const {
       adminname,
@@ -492,16 +544,20 @@ export const updateMasjeedDetails = CatchAsyncError(async (req, res, next) => {
       }
       const updateadminnameQuery = `UPDATE admin SET name = ? WHERE email = ?`;
 
-      connection.query(updateadminnameQuery, [adminname,email], (error, results) => {
-        if (error) {
-          return next(new ErrorHandler("Internal Server Error", 500));
-        }
+      connection.query(
+        updateadminnameQuery,
+        [adminname, email],
+        (error, results) => {
+          if (error) {
+            return next(new ErrorHandler("Internal Server Error", 500));
+          }
 
-        res.json({
-          success: true,
-          message: "masjeed updated successfully",
-        });
-      });
+          res.json({
+            success: true,
+            message: "masjeed updated successfully",
+          });
+        }
+      );
     });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));

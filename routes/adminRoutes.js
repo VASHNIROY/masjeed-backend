@@ -36,18 +36,13 @@ const upload = multer({ storage: storage });
 
 adminRouter.post("/adminlogin", adminLogin);
 
-adminRouter.get(
-  "/getmasjeedtimings/:id",
-  isAuthenticatedAdmin,
-  getMasjeedTimings
-);
+adminRouter.get("/getmasjeedtimings", isAuthenticatedAdmin, getMasjeedTimings);
 
 adminRouter.post("/forgetpassword", forgotPassword);
 
 adminRouter.post("/adminotpverfiysend", verifyEmailOTPSend);
 
 adminRouter.put("/updateTimingRow", isAuthenticatedAdmin, updateTimingRow);
-
 
 adminRouter.put(
   "/updatemasjeeddetails",
@@ -56,10 +51,10 @@ adminRouter.put(
   updateMasjeedDetails
 );
 
-adminRouter.put("/addhrtorow/:id", isAuthenticatedAdmin, addTimingRowToHr);
+adminRouter.put("/addhrtorow", isAuthenticatedAdmin, addTimingRowToHr);
 
 adminRouter.put(
-  "/substracthrtorow/:id",
+  "/substracthrtorow",
   isAuthenticatedAdmin,
   substractTimingRowToHr
 );
