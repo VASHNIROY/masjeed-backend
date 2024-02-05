@@ -17,7 +17,7 @@ superadminrouter.post("/superadminlogin", superAdminLogin);
 
 superadminrouter.get("/getmasjeeds", isAuthenticatedSuperAdmin, masjeedsList);
 
-superadminrouter.get("/newmasjeeds",isAuthenticatedSuperAdmin, newMasjeeds);
+superadminrouter.get("/newmasjeeds", isAuthenticatedSuperAdmin, newMasjeeds);
 
 superadminrouter.put(
   "/approvemasjeed/:id",
