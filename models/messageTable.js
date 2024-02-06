@@ -8,5 +8,6 @@ export const messageTable = `
         status INT,
         startdate DATETIME,
         expirydate DATETIME,
+        enddate DATETIME,
         FOREIGN KEY (masjeedid) REFERENCES masjeed(id)
     )`;

@@ -810,11 +810,11 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
     let filename = req.file ? req.file.filename : null;
 
     if (!filename) {
-       filename = req.body.description
+      filename = req.body.description;
     }
 
-    const { title, startdate, expirydate, status, type } =
-      req.body;
+    const { title, startdate, expirydate, status, type, enddate } = req.body;
+
 
     const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
 
@@ -829,11 +829,20 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
 
       const masjeedid = results[0].id;
 
-      const addMessageQuery = `INSERT INTO message (masjeedid, title, description, startdate, expirydate, status, type) VALUES (?, ?, ?, ?,?, ?, ?)`;
+      const addMessageQuery = `INSERT INTO message (masjeedid, title, description, startdate, expirydate, status, type, enddate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
       connection.query(
         addMessageQuery,
-        [masjeedid, title, filename, startdate, expirydate, status, type],
+        [
+          masjeedid,
+          title,
+          filename,
+          startdate,
+          expirydate,
+          status,
+          type,
+          JSON.parse(enddate),
+        ],
         (error, results) => {
           if (error) {
             return next(new ErrorHandler(error.message, 500));
