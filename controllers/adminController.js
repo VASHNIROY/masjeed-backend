@@ -815,6 +815,8 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
 
     const { title, startdate, expirydate, status, type, enddate } = req.body;
 
+    console.log(req.body, filename, "kapil");
+
     const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
 
     connection.query(getmasjeedidQuery, [useremail], (error, results) => {
@@ -830,11 +832,10 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
 
       const addMessageQuery = `INSERT INTO message (masjeedid, title, description, startdate, expirydate, status, type, enddate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
-      const startdate1 = startdate === "null" ? JSON.parse(startdate) : enddate;
-      const enddate1 = enddate === "null" ? JSON.parse(enddate) : enddate;
-
-      const expirydate1 =
-        expirydate === "null" ? JSON.parse(expirydate) : expirydate;
+      // Handle datetime with string
+      const startdate1 = startdate ? new Date(startdate) : null;
+      const enddate1 = enddate ? new Date(enddate) : null;
+      const expirydate1 = expirydate ? new Date(expirydate) : null;
 
       connection.query(
         addMessageQuery,
@@ -861,3 +862,69 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("Internal Server Error", 500));
   }
 });
+
+
+
+
+
+// export const addmessage = CatchAsyncError(async (req, res, next) => {
+//   try {
+//     const useremail = req.user.email;
+
+//     let filename = req.file ? req.file.filename : null;
+
+//     if (!filename) {
+//       filename = req.body.description;
+//     }
+
+    
+
+//     const { title, startdate, expirydate, status, type, enddate } = req.body;
+//     console.log(req.body,filename,"kapil")
+
+//     const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
+
+//     connection.query(getmasjeedidQuery, [useremail], (error, results) => {
+//       if (error) {
+//         return next(new ErrorHandler(error.message, 500));
+//       }
+
+//       if (results.length === 0) {
+//         return next(new ErrorHandler("Masjeed Not Found", 404));
+//       }
+
+//       const masjeedid = results[0].id;
+
+//       const addMessageQuery = `INSERT INTO message (masjeedid, title, description, startdate, expirydate, status, type, enddate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+//       const startdate1 = startdate === "null" ? JSON.parse(startdate) : enddate;
+//       const enddate1 = enddate === "null" ? JSON.parse(enddate) : enddate;
+
+//       const expirydate1 =
+//         expirydate === "null" ? JSON.parse(expirydate) : expirydate;
+
+//       connection.query(
+//         addMessageQuery,
+//         [
+//           masjeedid,
+//           title,
+//           filename,
+//           startdate1,
+//           expirydate1,
+//           status,
+//           type,
+//           enddate1,
+//         ],
+//         (error, results) => {
+//           if (error) {
+//             return next(new ErrorHandler(error.message, 500));
+//           }
+
+//           res.json({ success: true, message: "Message Added" });
+//         }
+//       );
+//     });
+//   } catch (error) {
+//     return next(new ErrorHandler("Internal Server Error", 500));
+//   }
+// });
