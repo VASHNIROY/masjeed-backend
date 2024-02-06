@@ -115,7 +115,6 @@ export const addMasjeed = CatchAsyncError(async (req, res, next) => {
 //   }
 // });
 
-
 export const todaySchedule = CatchAsyncError(async (req, res, next) => {
   try {
     const masjeedid = req.params.id;
@@ -147,32 +146,32 @@ export const todaySchedule = CatchAsyncError(async (req, res, next) => {
 
       const todayTimings = [
         ...todayTimeSchedule.map((row) => ({
-          id:"1",
-          name: 'fajr',
+          id: "1",
+          name: "fajr",
           starttime: row.fajr,
           endtime: calculateEndTime(row.fajr, row.fajriqamah),
         })),
         ...todayTimeSchedule.map((row) => ({
-          id:"2",
-          name: 'dhuhr',
+          id: "2",
+          name: "dhuhr",
           starttime: row.dhuhr,
           endtime: calculateEndTime(row.dhuhr, row.dhuhriqamah),
         })),
         ...todayTimeSchedule.map((row) => ({
-          id:"3",
-          name: 'asr',
+          id: "3",
+          name: "asr",
           starttime: row.asr,
           endtime: calculateEndTime(row.asr, row.asriqamah),
         })),
         ...todayTimeSchedule.map((row) => ({
-          id:"4",
-          name: 'maghrib',
+          id: "4",
+          name: "maghrib",
           starttime: row.maghrib,
           endtime: calculateEndTime(row.maghrib, row.maghribiqamah),
         })),
         ...todayTimeSchedule.map((row) => ({
-          id:"5",
-          name: 'isha',
+          id: "5",
+          name: "isha",
           starttime: row.isha,
           endtime: calculateEndTime(row.isha, row.ishaiqamah),
         })),
@@ -186,14 +185,9 @@ export const todaySchedule = CatchAsyncError(async (req, res, next) => {
   }
 });
 
-
-
-
-
-
 function calculateEndTime(startTime, iqamah) {
   // Assuming iqamah time is given in minutes
-  const startTimeParts = startTime.split(':');
+  const startTimeParts = startTime.split(":");
   const hours = parseInt(startTimeParts[0]);
   const minutes = parseInt(startTimeParts[1]);
 
@@ -205,7 +199,6 @@ function calculateEndTime(startTime, iqamah) {
 
   return `${endHours}:${formattedEndMinutes}`;
 }
-
 
 export const databaseCountries = CatchAsyncError(async (req, res, next) => {
   try {

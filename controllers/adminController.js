@@ -822,7 +822,7 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler(error.message, 500));
       }
 
-      if (results.length === 0) {
+      if (results.length === 0) { 
         return next(new ErrorHandler("Masjeed Not Found", 404));
       }
 
