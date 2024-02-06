@@ -815,7 +815,6 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
 
     const { title, startdate, expirydate, status, type, enddate } = req.body;
 
-
     const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
 
     connection.query(getmasjeedidQuery, [useremail], (error, results) => {
@@ -831,17 +830,23 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
 
       const addMessageQuery = `INSERT INTO message (masjeedid, title, description, startdate, expirydate, status, type, enddate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
+      const startdate1 = startdate === "null" ? JSON.parse(startdate) : enddate;
+      const enddate1 = enddate === "null" ? JSON.parse(enddate) : enddate;
+
+      const expirydate1 =
+        expirydate === "null" ? JSON.parse(expirydate) : expirydate;
+
       connection.query(
         addMessageQuery,
         [
           masjeedid,
           title,
           filename,
-          startdate,
-          expirydate,
+          startdate1,
+          expirydate1,
           status,
           type,
-          JSON.parse(enddate),
+          enddate1,
         ],
         (error, results) => {
           if (error) {
