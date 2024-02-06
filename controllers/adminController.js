@@ -802,3 +802,57 @@ export const editIqamah = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("Internal Server Error", 500));
   }
 });
+
+export const addmessage = CatchAsyncError(async (req, res, next) => {
+  try {
+    const useremail = req.user.email;
+
+    let filename = req.file ? req.file.filename : null;
+
+    if (!filename) {
+      filename = req.body.description;
+    }
+
+    const { title, startdate, expirydate, status, type, enddate } = req.body;
+
+
+    const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
+
+    connection.query(getmasjeedidQuery, [useremail], (error, results) => {
+      if (error) {
+        return next(new ErrorHandler(error.message, 500));
+      }
+
+      if (results.length === 0) {
+        return next(new ErrorHandler("Masjeed Not Found", 404));
+      }
+
+      const masjeedid = results[0].id;
+
+      const addMessageQuery = `INSERT INTO message (masjeedid, title, description, startdate, expirydate, status, type, enddate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+      connection.query(
+        addMessageQuery,
+        [
+          masjeedid,
+          title,
+          filename,
+          startdate,
+          expirydate,
+          status,
+          type,
+          JSON.parse(enddate),
+        ],
+        (error, results) => {
+          if (error) {
+            return next(new ErrorHandler(error.message, 500));
+          }
+
+          res.json({ success: true, message: "Message Added" });
+        }
+      );
+    });
+  } catch (error) {
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+});

@@ -4,6 +4,7 @@ import { createMasjeedTable } from "./masjeedTable.js";
 import { createAdminTable } from "./adminTable.js";
 import { createPrayerTimingsTable } from "./prayerTimingsTable.js";
 import { adminStaffTable } from "./adminStaffTable.js";
+import { messageTable } from "./messageTable.js";
 
 const tableToCreate = [
   { tableName: "Super Admin", sql: createSuperAdminTable },
@@ -22,6 +23,10 @@ const tableToCreate = [
   {
     tableName: "Admin Staff",
     sql: adminStaffTable,
+  },
+  {
+    tableName: "Message Table",
+    sql: messageTable,
   },
 ];
 

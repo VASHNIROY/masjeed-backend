@@ -4,6 +4,7 @@ import path from "path";
 import {
   addAdminStaff,
   addTimingRowToHr,
+  addmessage,
   adminLogin,
   editAdminStaffMember,
   editIqamah,
@@ -72,3 +73,10 @@ adminRouter.put(
 adminRouter.put("/editIqamah", isAuthenticatedAdmin, editIqamah);
 
 adminRouter.get("/getiqamahtimigs", isAuthenticatedAdmin, getIqamahDetails);
+
+adminRouter.post(
+  "/addmessage",
+  upload.single("file"),
+  isAuthenticatedAdmin,
+  addmessage
+);
