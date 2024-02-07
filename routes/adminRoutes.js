@@ -12,6 +12,7 @@ import {
   getIqamahDetails,
   getMasjeedDetails,
   getMasjeedTimings,
+  getmessages,
   substractTimingRowToHr,
   updateMasjeedDetails,
   updateTimingRow,
@@ -80,3 +81,5 @@ adminRouter.post(
   isAuthenticatedAdmin,
   addmessage
 );
+
+adminRouter.get("/getmessages", isAuthenticatedAdmin, getmessages);

@@ -824,7 +824,7 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler(error.message, 500));
       }
 
-      if (results.length === 0) { 
+      if (results.length === 0) {
         return next(new ErrorHandler("Masjeed Not Found", 404));
       }
 
@@ -863,9 +863,47 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
   }
 });
 
+export const getmessages = CatchAsyncError(async (req, res, next) => {
+  try {
+    const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
 
+    connection.query(getmasjeedidQuery, (error, results) => {
+      if (error) {
+        return next(new ErrorHandler("Internal Server Error", 500));
+      }
 
+      if (results.length === 0) {
+        return next(new ErrorHandler("Masjeed Not Found", 404));
+      }
 
+      const masjeedid = results[0].id;
+
+      const getmasjeedmessagesQuery = `SELECT * FROM message WHERE masjeedid = ?`;
+
+      connection.query(
+        getmasjeedmessagesQuery,
+        [masjeedid],
+        (error, results) => {
+          if (error) {
+            return next(new ErrorHandler("Internal Server Error", 500));
+          }
+
+          if (results.length === 0) {
+            return next(new ErrorHandler("Messages Not Found", 404));
+          }
+
+          res.json({
+            success: true,
+            message: "Messages Fetched",
+            data: results,
+          });
+        }
+      );
+    });
+  } catch (error) {
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+});
 
 // export const addmessage = CatchAsyncError(async (req, res, next) => {
 //   try {
@@ -876,8 +914,6 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
 //     if (!filename) {
 //       filename = req.body.description;
 //     }
-
-    
 
 //     const { title, startdate, expirydate, status, type, enddate } = req.body;
 //     console.log(req.body,filename,"kapil")
