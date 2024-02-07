@@ -865,10 +865,13 @@ export const addmessage = CatchAsyncError(async (req, res, next) => {
 
 export const getmessages = CatchAsyncError(async (req, res, next) => {
   try {
+    const useremail = req.user.email;
+
     const getmasjeedidQuery = `SELECT id FROM masjeed WHERE email = ? AND status = 1`;
 
-    connection.query(getmasjeedidQuery, (error, results) => {
+    connection.query(getmasjeedidQuery, [useremail], (error, results) => {
       if (error) {
+        console.log("entered");
         return next(new ErrorHandler("Internal Server Error", 500));
       }
 
